@@ -7,10 +7,10 @@ import {
   type ViewStyle,
   type TextStyle,
 } from 'react-native';
-import { appTheme } from '../../../theme';
+import { theme } from '../../../theme';
 import { styles } from './Input.styles';
 
-const { primary } = appTheme;
+const { primary } = theme.colors;
 
 export type InputProps = TextInputProps & {
   label?: string;

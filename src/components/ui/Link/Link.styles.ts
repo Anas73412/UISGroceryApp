@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
-import { appTheme } from '../../../theme';
+import { theme } from '../../../theme';
 
-const { primary } = appTheme;
+const { primary } = theme.colors;
 
 export const styles = StyleSheet.create({
   text: {

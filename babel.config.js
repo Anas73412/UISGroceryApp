@@ -3,5 +3,8 @@ module.exports = {
     'module:@react-native/babel-preset',
     'nativewind/babel',
   ],
-  plugins: [],
+  plugins: [
+    ['@babel/plugin-proposal-decorators', { legacy: true }],
+    ['@babel/plugin-proposal-class-properties', { loose: true }],
+  ],
 };

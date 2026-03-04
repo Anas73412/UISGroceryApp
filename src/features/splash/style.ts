@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { appTheme } from "../../theme";
+import { theme } from "../../theme";
 
 export const styles = StyleSheet.create({
   container: {
@@ -44,7 +44,7 @@ export const styles = StyleSheet.create({
   brandText: {
     fontSize: 20,
     fontWeight: '600',
-    color:appTheme.primary,
+    color:theme.colors.primary,
     marginBottom: 24,
   },
   spinner: {

@@ -4,7 +4,6 @@ import type { AuthStackParamList } from './types';
 import { LoginScreen } from '../features/auth/screens/login/LoginScreen';
 import { RegisterScreen } from '../features/auth/screens/register/RegisterScreen';
 import { ForgotPasswordScreen } from '../features/auth/screens/forgotPassword/ForgotPasswordScreen';
-import { SplashScreen } from '../features/splash/SplashScreen';
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 

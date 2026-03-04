@@ -1,36 +1,54 @@
-const BASE_URL = 'https://api.example.com'; // Replace with your API base URL
+import axios, { type AxiosRequestConfig, type Method } from 'axios';
+import { Platform } from 'react-native';
+import type { ApiResponseModel } from './types';
+
+// On Android emulator, localhost is the emulator itself; use 10.0.2.2 to reach host machine.
+const getBaseUrl = () => {
+  if (Platform.OS === 'android') {
+    return 'http://10.0.2.2:3000';
+  }
+  return 'http://localhost:3000';
+};
+const BASE_URL = getBaseUrl();
 
 interface RequestConfig {
-  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  method?: Method;
   body?: unknown;
   headers?: Record<string, string>;
+  responseType?: 'json' | 'text';
 }
 
-async function request<T>(path: string, config: RequestConfig = {}): Promise<{ data: T }> {
+async function request<T>(path: string, config: RequestConfig = {}): Promise<T> {
   const { method = 'GET', body, headers = {} } = config;
   const url = `${BASE_URL}${path}`;
 
-  const response = await fetch(url, {
+  const axiosConfig: AxiosRequestConfig = {
+    url,
     method,
     headers: {
       'Content-Type': 'application/json',
       ...headers,
     },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+    data: body,
+    responseType: config.responseType ?? 'json',
+    timeout: 10000,
+  };
 
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-  }
+  console.log(`Making ${method} request to: ${url}`);
 
-  const data = (await response.json()) as T;
-  return { data };
+  const response = await axios<T>(axiosConfig);
+  return response.data;
 }
 
 export const apiClient = {
-  get: <T>(path: string) => request<T>(path, { method: 'GET' }),
-  post: <T>(path: string, body?: unknown) => request<T>(path, { method: 'POST', body }),
-  put: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PUT', body }),
-  patch: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PATCH', body }),
-  delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+  get:  <T>(path: string, config?: Omit<RequestConfig, 'method' | 'body'>) =>
+    request<T>(path, { method: 'GET', ...(config ?? {}) }),
+  post: <T>(path: string, body?: unknown, config?: Omit<RequestConfig, 'method' | 'body'>) =>
+    request<T>(path, { method: 'POST', body, ...(config ?? {}) }),
+  put:  <T>(path: string, body?: unknown, config?: Omit<RequestConfig, 'method' | 'body'>) =>
+    request<T>(path, { method: 'PUT', body, ...(config ?? {}) }),
+  patch:<T>(path: string, body?: unknown, config?: Omit<RequestConfig, 'method' | 'body'>) =>
+    request<T>(path, { method: 'PATCH', body, ...(config ?? {}) }),
+  delete:<T>(path: string, config?: Omit<RequestConfig, 'method' | 'body'>) =>
+    request<T>(path, { method: 'DELETE', ...(config ?? {}) }),
 };

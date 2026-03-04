@@ -6,7 +6,7 @@ import {
   type ViewStyle,
   type TextStyle,
 } from 'react-native';
-import { appTheme } from '../../../theme';
+import { theme } from '../../../theme';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline';
 
@@ -27,7 +27,7 @@ export function Button({
   style,
   ...rest
 }: ButtonProps) {
-  const { primary, secondary } = appTheme;
+  const { primary, secondary } = theme.colors;
 
   const baseContainer: ViewStyle = {
     paddingVertical: 14,

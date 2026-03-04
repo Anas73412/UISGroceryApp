@@ -2,9 +2,11 @@ import React, { useEffect } from 'react';
 import { View, Text, Image, ActivityIndicator } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigation/types';
-import { appTheme } from '../../theme';
+import { theme } from '../../theme';
 import { styles } from './style';
-
+import { SplashController } from './SplashControllet';
+import AuthRepository from '../../data/repositories/AuthRepository';
+import { SUCCESS } from '../../utils/constants';
 const appIcon = require('../../assets/images/app_icon.png');
 
 type SplashScreenProps = {
@@ -13,14 +15,27 @@ type SplashScreenProps = {
 
 export function SplashScreen({ navigation }: SplashScreenProps) {
   useEffect(() => {
-    const timer = setTimeout(() => {
-      // TODO: Check authentication state here
-      // If user is authenticated: navigation.replace('Main')
-      // If not authenticated: navigation.replace('Auth')
-      navigation.replace('Auth');
-    }, 2500);
-    return () => clearTimeout(timer);
+    initializeStartApp();
   }, [navigation]);
+
+  const initializeStartApp = async () => {
+    try {
+      const res = await SplashController.loadAppConfig();
+      if (res.status === SUCCESS) {
+        const isLoggedIn = await AuthRepository.isLoggedIn();
+        if (isLoggedIn) {
+          navigation.replace('Main');
+        } else {
+          navigation.replace('Auth');
+        }
+      } else {
+        navigation.replace('Auth');
+      }
+    } catch (err) {
+      console.log('Intialization Error', err);
+      navigation.replace('Auth');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -29,7 +44,7 @@ export function SplashScreen({ navigation }: SplashScreenProps) {
         <Text style={styles.brandText}>UIS Groceries</Text>
         <ActivityIndicator
           size="small"
-          color={appTheme.primary}
+          color={theme.colors.primary}
           style={styles.spinner}
         />
       </View>
