@@ -239,13 +239,13 @@ export const theme = {
       buttonText: 24 / 18, // Button Text: 24px/18px = 1.333
     },
 
-    // Font weights
+    // Font weights (as const so they match React Native TextStyle fontWeight union)
     fontWeight: {
       normal: '400',
       medium: '500',
       semibold: '600',
       bold: '700',
-    },
+    } as const,
 
     // Complete text style definitions
     textStyles: {

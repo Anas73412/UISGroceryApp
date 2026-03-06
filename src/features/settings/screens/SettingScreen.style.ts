@@ -1,0 +1,150 @@
+import { StyleSheet } from 'react-native';
+import { theme } from '../../../theme';
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.backgroundSecondary,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing[4],
+    paddingVertical: theme.spacing[3],
+    paddingTop: theme.spacing[5],
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.borderLight,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: -theme.spacing[1],
+  },
+  headerTitle: {
+    fontSize: theme.typography.fontSize['2xl'],
+    fontWeight: '600',
+    color: theme.colors.primary,
+  },
+  headerRight: {
+    width: 40,
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: theme.spacing[4],
+    paddingBottom: theme.spacing[8],
+  },
+  profileCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.md,
+    paddingVertical: theme.spacing[6],
+    paddingHorizontal: theme.spacing[4],
+    alignItems: 'center',
+    marginBottom: theme.spacing[4],
+    shadowColor: theme.colors.black,
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+    position: 'relative',
+  },
+  activeBadge: {
+    position: 'absolute',
+    top: theme.spacing[3],
+    right: theme.spacing[4],
+    backgroundColor: theme.colors.success,
+    paddingHorizontal: theme.spacing[2],
+    paddingVertical: theme.spacing[1],
+    borderRadius: theme.borderRadius.md,
+  },
+  activeBadgeText: {
+    fontSize: theme.typography.fontSize.xs,
+    fontWeight: '600',
+    color: theme.colors.white,
+  },
+  avatarWrapper: {
+    marginBottom: theme.spacing[3],
+  },
+  avatarPlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: theme.colors.primaryLightBG || theme.colors.primary,
+    opacity: 0.9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitial: {
+    fontSize: theme.typography.fontSize['2xl'],
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.white,
+  },
+  profileName: {
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.gray800,
+    marginBottom: theme.spacing[1],
+  },
+  profileContact: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.gray500,
+  },
+  optionsCard: {
+    width: '100%',
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.md,
+    overflow: 'hidden',
+    marginBottom: theme.spacing[6],
+    shadowColor: theme.colors.black,
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  optionRowWrapper: {
+    width: '100%',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.borderLight,
+  },
+  optionRowLast: {
+    borderBottomWidth: 0,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    minHeight: 56,
+    paddingVertical: theme.spacing[3],
+    paddingHorizontal: theme.spacing[4],
+  },
+  optionRowPressed: {
+    backgroundColor: theme.colors.gray50,
+  },
+  optionIconBox: {
+    width: 30,
+    height: 30,
+    borderRadius: theme.borderRadius.base,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: theme.spacing[3],
+  },
+  optionLabel: {
+    flex: 1,
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.normal,
+    color: theme.colors.gray800,
+  },
+  optionLabelDestructive: {
+    color: theme.colors.error,
+  },
+  version: {
+    textAlign: 'center',
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.gray500,
+  },
+});
+export default styles;

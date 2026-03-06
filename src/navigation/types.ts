@@ -10,8 +10,10 @@ export type RootStackParamList = {
 
 export type MainTabParamList = {
   HomeTab: undefined;
+  ShareTab: undefined;
   CartTab: undefined;
   ProfileTab: undefined;
+  SettingsTab: undefined;
 };
 
 export type AuthStackParamList = {

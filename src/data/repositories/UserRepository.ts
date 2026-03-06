@@ -10,12 +10,16 @@ class UserRepository {
       const existing = await table.query().fetch();
       await Promise.all(existing.map(record => record.destroyPermanently()));
       return await table.create(newUser => {
-        newUser.name = user.name;
-        newUser.email = user.email;
-        newUser.uid = user.uid;
-        newUser.hashedPassword = user.hashedPassword;
-        newUser.profilePictureUrl = user.profilePictureUrl;
-        newUser.createdAt = user.createdAt;
+        newUser.name = user.name ?? '';
+        newUser.mobile = user.mobile ?? '';
+        newUser.uid = user.id ?? 0;
+        newUser.profile = user.profile ?? '';
+        newUser.createdAt = user.created_at ?? undefined;
+        newUser.isWifiUser = user.isWiFiUser ?? 0;
+        newUser.address = user.address ?? '';
+        newUser.planId = user.plan_id ?? 0;
+        newUser.deviceToken = user.deviceToken ?? '';
+        newUser.status = user.status ?? 0;
       });
     });
   }
@@ -24,10 +28,10 @@ class UserRepository {
     return database.get(DB_TABLES.USER_TABLE).query().fetch();
   }
 
-  async getUserByEmailFromDB(email: string): Promise<UserModel | null> {
+  async getUserByEmailFromDB(uid: number): Promise<UserModel | null> {
     const users = await database
       .get(DB_TABLES.USER_TABLE)
-      .query(Q.where('email', email))
+      .query(Q.where('uid', uid))
       .fetch();
     return users.length > 0 ? (users[0] as UserModel) : null;
   }

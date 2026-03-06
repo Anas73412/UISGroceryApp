@@ -15,13 +15,13 @@ interface LoginApiResponse {
 
 export const loginService = {
   async loginUser(
-    email: string,
+    mobile: string,
     password: string,
   ): Promise<ApiResponseModel<UserResponseModel>> {
     try {
       const response = await apiClient.post<LoginApiResponse>(
         API_ENDPOINTS.LOGIN,
-        { email, password },
+        { mobile, password },
       );
       console.log('LoginDeta', response);
       return mapResponse<UserResponseModel>(response);

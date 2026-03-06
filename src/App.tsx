@@ -11,6 +11,7 @@ import { RootNavigator } from './navigation/RootNavigator';
 import { theme } from './theme';
 import { MessageDialogProvider } from './components/context/MessageDialogContext';
 import { LoadingProvider } from './components/context/LoadingContext';
+import { ConfirmationDialogProvider } from './components/context/ConfirmationDialogContext';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -21,13 +22,15 @@ function App() {
     <SafeAreaProvider>
       <LoadingProvider>
         <MessageDialogProvider>
-          <NavigationContainer>
-            <StatusBar
-              barStyle={barStyle}
-              backgroundColor={theme.colors.background}
-            />
-            <RootNavigator />
-          </NavigationContainer>
+          <ConfirmationDialogProvider>
+            <NavigationContainer>
+              <StatusBar
+                barStyle={barStyle}
+                backgroundColor={theme.colors.background}
+              />
+              <RootNavigator />
+            </NavigationContainer>
+          </ConfirmationDialogProvider>
         </MessageDialogProvider>
       </LoadingProvider>
     </SafeAreaProvider>

@@ -11,7 +11,7 @@ export const LoginController = {
 
       if (res.status === SUCCESS && res.data) {
         await UserRepository.saveUserInDB(res.data);
-        await AuthRepository.saveToken(res.data.email, res.data.hashedPassword);
+        await AuthRepository.saveToken(res.data.mobile, res.data.password);
         return res;
       } else {
         return {

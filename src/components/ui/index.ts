@@ -4,5 +4,10 @@ export { Link, type LinkProps } from './Link';
 export { OTPDialog, type OTPDialogProps } from './OTPDialog';
 export { LoadingBar, type LoadingBarProps } from './LoadingBar';
 export { AlertDialog, type AlertDialogProps, type AlertType } from './AlertDialog';
-export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog';
+export {
+  ConfirmDialog,
+  type ConfirmDialogProps,
+  type ConfirmationVariant,
+  type ConfirmDialogIcon,
+} from './ConfirmDialog';
 export { GlobalLoader, type GlobalLoaderProps } from './GlobalLoader';

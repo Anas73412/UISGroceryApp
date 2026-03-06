@@ -12,7 +12,9 @@ interface AppConfigApiResponse {
 
 export const splashService = {
   async fetchAppConfig(): Promise<ApiResponseModel<ConfigItem[]>> {
-    const response = await apiClient.get<AppConfigApiResponse>(API_ENDPOINTS.APP_CONFIG);
+    const response = await apiClient.get<AppConfigApiResponse>(
+      API_ENDPOINTS.APP_CONFIG,
+    );
     return {
       code: response.code ?? 200,
       status: response.status ?? SUCCESS,

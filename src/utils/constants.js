@@ -1,12 +1,24 @@
-export const SUCCESS = 'success';
-export const FAILED = 'failed';
+import { Dimensions } from "react-native";
+
+export const SUCCESS = 'Success';
+export const FAILED = 'Failed';
+export const SUB_PATH='/api/unitedweb';
+export const IMAGE_BASE_URL='https://unitedinternetservice.in/';
 
 //API Endpoints
 export const API_ENDPOINTS = {
-  LOGIN: '/auth/login',
+  LOGIN: `${SUB_PATH}/login`,
   SIGNUP: '/signup',
-  APP_CONFIG:'/auth/app-config'
+  APP_CONFIG: `${SUB_PATH}/getAppConfig`,
+  GET_SLIDERS: `${SUB_PATH}/getAllBanners`,
+  GET_CATEGORIES: `${SUB_PATH}/getAllCategory`,
 };
+
+export const { width: SCREEN_WIDTH } = Dimensions.get('window');
+export const SLIDER_PEEK = 24; // How much of next slide shows
+export const SLIDER_ITEM_WIDTH = SCREEN_WIDTH - SLIDER_PEEK;
+export const SLIDER_HEIGHT = 160;
+export const AUTO_SLIDE_INTERVAL = 4000; 
 
 export const DATABASE_NAME = 'GroceryAppDB';
 

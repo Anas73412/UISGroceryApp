@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
-import { appTheme } from '../../../theme';
+import { theme } from '../../../theme';
 
-const { primary, background } = appTheme;
+const CARD_MAX_WIDTH = 340;
 
 export const styles = StyleSheet.create({
   overlay: {
@@ -11,63 +11,54 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
   },
-  box: {
-    backgroundColor: background,
-    borderRadius: 16,
-    padding: 24,
+  card: {
     width: '100%',
-    maxWidth: 340,
+    maxWidth: CARD_MAX_WIDTH,
+    borderRadius: theme.borderRadius.xl,
+    padding: 28,
+    alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowRadius: 24,
+    elevation: 12,
+  },
+  iconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  icon: {
+    alignSelf: 'center',
   },
   title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-    textAlign: 'center',
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: '600',
     marginBottom: 12,
+    textAlign: 'center',
   },
   message: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.gray700,
     textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 24,
+    lineHeight: 24,
+    marginBottom: 28,
+    paddingHorizontal: 8,
   },
   actions: {
     flexDirection: 'row',
+    gap: 12,
+    alignSelf: 'stretch',
   },
   buttonCancel: {
     flex: 1,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: primary,
-    backgroundColor: '#fff',
-    marginRight: 6,
+    minHeight: 48,
   },
   buttonConfirm: {
     flex: 1,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: primary,
-    marginLeft: 6,
-  },
-  buttonCancelText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: primary,
-  },
-  buttonConfirmText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#fff',
+    minHeight: 48,
   },
 });

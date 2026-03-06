@@ -9,7 +9,6 @@ export const SplashController = {
       const res = await splashService.fetchAppConfig();
 
       if (res.status === SUCCESS && res.data && Array.isArray(res.data)) {
-        console.log('App Config Response data:', JSON.stringify(res.data));
         await ConfigRepository.saveAllConfigs(res.data);
         return res;
       } else {
