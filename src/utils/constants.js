@@ -12,6 +12,11 @@ export const API_ENDPOINTS = {
   APP_CONFIG: `${SUB_PATH}/getAppConfig`,
   GET_SLIDERS: `${SUB_PATH}/getAllBanners`,
   GET_CATEGORIES: `${SUB_PATH}/getAllCategory`,
+  GET_PRODUCTS: `${SUB_PATH}/getProductsWithPaging`,
+  GET_CART_DETAILS: `${SUB_PATH}/getUserCartDetails`,
+  ADD_TO_CART: `${SUB_PATH}/addToCart`,
+  UPDATE_CART_QUANTITY: `${SUB_PATH}/updateCartQty`,
+  REMOVE_CART_ITEM: `${SUB_PATH}/removeCartItem`,
 };
 
 export const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -24,7 +29,8 @@ export const DATABASE_NAME = 'GroceryAppDB';
 
 export const DB_TABLES ={
   USER_TABLE: 'users',
-  CONFIG_TABLE: 'app_config'
+  CONFIG_TABLE: 'app_config',
+  CART_TABLE:'cart'
 };
 
 export const CONFIG_KEYS = {

@@ -19,6 +19,16 @@ class AuthRepository {
     }
   }
 
+  async getCredentials(): Promise<{ mobile: string; token: string } | null> {
+    const credentials = await Keychain.getGenericPassword({
+      server: SERVICE_AUTH_CREDENTIALS,
+    });
+    if (credentials) {
+      return { mobile: credentials.username, token: credentials.password };
+    }
+    return null;
+  }
+
   async isLoggedIn(): Promise<boolean> {
     const token = await this.getToken();
     return token !== null;

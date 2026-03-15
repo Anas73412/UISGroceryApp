@@ -196,6 +196,12 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: theme.colors.primary,
   },
+  loadingFooter: {
+    paddingVertical: theme.spacing[6],
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+  },
 });
 
 export default styles;

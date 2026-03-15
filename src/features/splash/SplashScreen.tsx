@@ -6,6 +6,7 @@ import { theme } from '../../theme';
 import { styles } from './style';
 import { SplashController } from './SplashControllet';
 import AuthRepository from '../../data/repositories/AuthRepository';
+import { sessionStore } from '../../store/sessionStore';
 import { SUCCESS } from '../../utils/constants';
 const appIcon = require('../../assets/images/app_icon.png');
 
@@ -24,6 +25,7 @@ export function SplashScreen({ navigation }: SplashScreenProps) {
       if (res.status === SUCCESS) {
         const isLoggedIn = await AuthRepository.isLoggedIn();
         if (isLoggedIn) {
+          await sessionStore.getState().loadSession();
           navigation.replace('Main');
         } else {
           navigation.replace('Auth');

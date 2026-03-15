@@ -3,6 +3,7 @@ import { FAILED, SUCCESS } from '../../../../utils/constants';
 import { loginService } from './service';
 import UserRepository from '../../../../data/repositories/UserRepository';
 import AuthRepository from '../../../../data/repositories/AuthRepository';
+import { sessionStore } from '../../../../store/sessionStore';
 
 export const LoginController = {
   async loginUser(email: string, password: string) {
@@ -12,6 +13,8 @@ export const LoginController = {
       if (res.status === SUCCESS && res.data) {
         await UserRepository.saveUserInDB(res.data);
         await AuthRepository.saveToken(res.data.mobile, res.data.password);
+        const user = await UserRepository.getCurrentUser();
+        sessionStore.getState().setSession(user, res.data.password);
         return res;
       } else {
         return {

@@ -5,7 +5,11 @@ class SettingRepository {
   async clearAllLocalData(): Promise<boolean> {
     try {
       await database.write(async () => {
-        const tables = [DB_TABLES.USER_TABLE];
+        const tables = [
+          DB_TABLES.USER_TABLE,
+          DB_TABLES.CART_TABLE,
+          DB_TABLES.CONFIG_TABLE,
+        ];
         for (const tableName of tables) {
           await database.get(tableName).query().destroyAllPermanently();
         }

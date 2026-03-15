@@ -73,8 +73,6 @@ export function LoginScreen({ navigation }: LoginScreenProps) {
     } catch (error: any) {
       hide();
       showErrorDialog('Login Exception', (error as Error).message);
-    } finally {
-      hide();
     }
     // setLoading(true);
   };

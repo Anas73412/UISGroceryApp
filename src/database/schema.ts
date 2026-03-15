@@ -2,7 +2,7 @@ import { appSchema, tableSchema } from '@nozbe/watermelondb';
 import { DB_TABLES } from '../utils/constants';
 
 export const schema = appSchema({
-  version: 1,
+  version: 2,
   tables: [
     tableSchema({
       name: DB_TABLES.USER_TABLE,
@@ -26,6 +26,20 @@ export const schema = appSchema({
         { name: 'configId', type: 'number' },
         { name: 'configKey', type: 'string' },
         { name: 'configValue', type: 'string' },
+        { name: 'status', type: 'number' },
+        { name: 'createdAt', type: 'number' },
+        { name: 'modifiedAt', type: 'number', isOptional: true },
+      ],
+    }),
+
+    tableSchema({
+      name: DB_TABLES.CART_TABLE,
+      columns: [
+        { name: 'uId', type: 'number' },
+        { name: 'cartId', type: 'number' },
+        { name: 'productId', type: 'number' },
+        { name: 'quantity', type: 'number' },
+        { name: 'userId', type: 'number' },
         { name: 'status', type: 'number' },
         { name: 'createdAt', type: 'number' },
         { name: 'modifiedAt', type: 'number', isOptional: true },

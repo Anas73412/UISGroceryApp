@@ -5,6 +5,10 @@ import { ApiResponseModel } from '../../services/types';
 import { API_ENDPOINTS } from '../../utils/constants';
 import { mapErrorResponse, mapResponse } from '../auth/screens/login/service';
 import { CategoryResponseModel } from '../../data/reponses/CategoryResponseModel';
+import { PagingProductResponseModel } from '../../data/reponses/PagingProductResponseModel';
+import { CartResponseModel } from '../../data/models/CartModel';
+import { sessionStore } from '../../store/sessionStore';
+import { use } from 'react';
 
 export const homeService = {
   async fetchSliders(): Promise<ApiResponseModel<SliderResponseModel>> {
@@ -24,8 +28,37 @@ export const homeService = {
       const response = await apiClient.get<CategoryResponseModel>(
         API_ENDPOINTS.GET_CATEGORIES,
       );
-      console.log('cCategoryData: ', response);
       return mapResponse<CategoryResponseModel>(response);
+    } catch (error) {
+      return mapErrorResponse(error);
+    }
+  },
+
+  async fetchNewProducts(
+    categotyId: number,
+    pageNumber: number,
+    pageSize: number,
+  ): Promise<ApiResponseModel<PagingProductResponseModel>> {
+    try {
+      const response = await apiClient.post<PagingProductResponseModel>(
+        API_ENDPOINTS.GET_PRODUCTS,
+        { categotyId, pageNumber, pageSize },
+      );
+      return mapResponse<PagingProductResponseModel>(response);
+    } catch (error) {
+      return mapErrorResponse(error);
+    }
+  },
+
+  async fetchUserCarts(
+    userId: number,
+  ): Promise<ApiResponseModel<CartResponseModel>> {
+    try {
+      const response = await apiClient.post<PagingProductResponseModel>(
+        API_ENDPOINTS.GET_CART_DETAILS,
+        { userId: userId },
+      );
+      return mapResponse<CartResponseModel>(response);
     } catch (error) {
       return mapErrorResponse(error);
     }

@@ -12,6 +12,7 @@ import { theme } from './theme';
 import { MessageDialogProvider } from './components/context/MessageDialogContext';
 import { LoadingProvider } from './components/context/LoadingContext';
 import { ConfirmationDialogProvider } from './components/context/ConfirmationDialogContext';
+import Toast, { BaseToast } from 'react-native-toast-message';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -19,22 +20,51 @@ function App() {
   const barStyle = isDarkMode ? 'light-content' : 'dark-content';
 
   return (
-    <SafeAreaProvider>
-      <LoadingProvider>
-        <MessageDialogProvider>
-          <ConfirmationDialogProvider>
-            <NavigationContainer>
-              <StatusBar
-                barStyle={barStyle}
-                backgroundColor={theme.colors.background}
-              />
-              <RootNavigator />
-            </NavigationContainer>
-          </ConfirmationDialogProvider>
-        </MessageDialogProvider>
-      </LoadingProvider>
-    </SafeAreaProvider>
+    <>
+      <SafeAreaProvider>
+        <LoadingProvider>
+          <MessageDialogProvider>
+            <ConfirmationDialogProvider>
+              <NavigationContainer>
+                <StatusBar
+                  barStyle={barStyle}
+                  backgroundColor={theme.colors.background}
+                />
+                <RootNavigator />
+              </NavigationContainer>
+            </ConfirmationDialogProvider>
+          </MessageDialogProvider>
+        </LoadingProvider>
+      </SafeAreaProvider>
+      <Toast config={toastConfig} />
+    </>
   );
 }
 
 export default App;
+const toastConfig = {
+  success: (props: any) => (
+    <BaseToast
+      {...props}
+      style={{ borderLeftColor: theme.colors.success }}
+      contentContainerStyle={{ backgroundColor: theme.colors.white }}
+      text1Style={{
+        color: theme.colors.primary,
+        fontSize: 14,
+        fontWeight: '600',
+      }}
+    />
+  ),
+  error: (props: any) => (
+    <BaseToast
+      {...props}
+      style={{ borderLeftColor: theme.colors.error }}
+      contentContainerStyle={{ backgroundColor: theme.colors.white }}
+      text1Style={{
+        color: theme.colors.error,
+        fontSize: 14,
+        fontWeight: '600',
+      }}
+    />
+  ),
+};

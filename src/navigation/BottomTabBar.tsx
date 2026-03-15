@@ -3,11 +3,12 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { theme } from '../theme';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { cartStore } from '../store/cartStore';
 
 const TAB_ICONS: Record<string, string> = {
   HomeTab: 'home',
   ShareTab: 'share',
-  CartTab: 'shopping_cart',
+  CartTab: 'shopping-bag',
   ProfileTab: 'person',
   SettingsTab: 'settings',
 };
@@ -25,6 +26,8 @@ export function BottomTabBar({
   descriptors,
   navigation,
 }: BottomTabBarProps) {
+  const cartCount = cartStore(s => s.items.length);
+  console.log('CartCount: ', cartCount);
   return (
     <View style={styles.wrapper}>
       <View style={styles.container}>
@@ -49,19 +52,28 @@ export function BottomTabBar({
           if (isCenter) {
             return (
               <View key={route.key} style={styles.centerSlot}>
-                <Pressable
-                  style={[
-                    styles.centerButton,
-                    isFocused && styles.centerButtonFocused,
-                  ]}
-                  onPress={onPress}
-                >
-                  <MaterialIcons
-                    name={icon as never}
-                    size={28}
-                    color={theme.colors.textOnPrimary}
-                  />
-                </Pressable>
+                <View style={styles.badgeContainer}>
+                  <Pressable
+                    style={[
+                      styles.centerButton,
+                      isFocused && styles.centerButtonFocused,
+                    ]}
+                    onPress={onPress}
+                  >
+                    <MaterialIcons
+                      name={icon as never}
+                      size={28}
+                      color={theme.colors.textOnPrimary}
+                    />
+                    {cartCount > 0 && (
+                      <View style={styles.badge}>
+                        <Text style={styles.badgeText}>
+                          {cartCount > 99 ? '99+' : cartCount}
+                        </Text>
+                      </View>
+                    )}
+                  </Pressable>
+                </View>
               </View>
             );
           }
@@ -130,7 +142,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -24,
+    marginTop: -40,
     shadowColor: theme.colors.black,
     shadowOpacity: 0.18,
     shadowRadius: 16,
@@ -139,5 +151,23 @@ const styles = StyleSheet.create({
   },
   centerButtonFocused: {
     backgroundColor: theme.colors.primaryDark,
+  },
+  badgeContainer: { position: 'relative' },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 22,
+    height: 22,
+    borderRadius: 9,
+    backgroundColor: theme.colors.error, // or a contrasting color
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.white,
   },
 });

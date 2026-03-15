@@ -7,11 +7,11 @@ import {
   Pressable,
   SafeAreaView,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import { ProductCard } from '../components/ProductCard';
 import { CategoryCard } from '../components/CategoryCard';
 import { homeController } from '../controller';
-import type { Product } from '../model';
 import styles from './HomeScreen.style';
 import { SliderModel } from '../../../data/models/SliderModel';
 import {
@@ -25,15 +25,12 @@ import { SliderBanner } from '../../../components/ui/Slider/SliderBanner';
 import { useLoading } from '../../../components/context/LoadingContext';
 import { useFocusEffect } from '@react-navigation/native';
 import { CategoryModel } from '../../../data/models/CategoryModel';
-
-type Category = {
-  id: string;
-  label: string;
-  iconText?: string;
-};
+import { ProductModel } from '../../../data/models/ProductModel';
+import { CartModel } from '../../../data/models/CartModel';
+import { cartStore } from '../../../store/cartStore';
 
 export function HomeScreen() {
-  const [products, setProducts] = React.useState<Product[]>([]);
+  const [products, setProducts] = React.useState<ProductModel[]>([]);
   const [sliders, setSliders] = useState<SliderModel[]>([]);
   const [categories, setCategories] = useState<CategoryModel[]>([]);
   const [activeSilderIndex, setActiveSliderIndex] = useState(0);
@@ -43,12 +40,28 @@ export function HomeScreen() {
   const [selectedCategoryId, setSelectedCategoryId] = React.useState<number>(
     categories[0]?.categoryId,
   );
-
-  useFocusEffect(
-    useCallback(() => {
-      loadAllData();
-    }, []),
+  const [cartQuantities, setCartQuantities] = useState<Record<number, number>>(
+    {},
   );
+  const [pageNumber, setPageNumber] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const handleQuantityChange = useCallback(
+    (product: ProductModel, quantity: number) => {
+      const id = product.productId;
+      if (id != null) {
+        setCartQuantities(prev =>
+          quantity === 0 ? { ...prev, [id]: 0 } : { ...prev, [id]: quantity },
+        );
+      }
+    },
+    [],
+  );
+  useEffect(() => {
+    loadAllData();
+  }, []);
 
   useEffect(() => {
     if (sliders.length <= 1) return;
@@ -79,8 +92,11 @@ export function HomeScreen() {
 
       const catRes = await homeController.fetchCategories();
       const categories = extractDataArray<CategoryModel>(catRes.data);
+      await homeController.fetchUserCarts();
+      await loadProducts(1, false);
       setSliders(sliderData);
       setCategories(categories);
+      await cartStore.getState().loadFromDB();
       hide();
     } catch (error) {
       hide();
@@ -89,12 +105,48 @@ export function HomeScreen() {
     }
   };
 
+  const loadProducts = async (pageNumber: number, append: boolean = false) => {
+    if (pageNumber == 1) show('Loading...');
+    else setIsLoadingMore(true);
+
+    try {
+      const res = await homeController.fetchNewlyAddedProducts(
+        0,
+        pageNumber,
+        10,
+      );
+
+      const pagingData = res?.data;
+      if (pagingData) {
+        const newProducts = pagingData.products ?? [];
+        setProducts(prev => (append ? [...prev, ...newProducts] : newProducts));
+        setTotalPages(pagingData.totalPages ?? 1);
+        setHasMore(pageNumber < (pagingData.totalPages ?? 1));
+      }
+    } catch (error: any) {
+      console.log('Error in paging products', error.messsage);
+      hide();
+      setIsLoadingMore(false);
+    } finally {
+      hide();
+      setIsLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (!isLoadingMore && hasMore && pageNumber < totalPages) {
+      const nextPage = pageNumber + 1;
+      setPageNumber(nextPage);
+      loadProducts(nextPage, true);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <FlatList
           data={products}
-          keyExtractor={item => item.id}
+          keyExtractor={item => String(item.productId)}
           numColumns={2}
           columnWrapperStyle={styles.productRow}
           contentContainerStyle={styles.listContent}
@@ -195,15 +247,34 @@ export function HomeScreen() {
               </View>
             </>
           }
-          renderItem={({ item }) => (
-            <View style={styles.productColumn}>
-              <ProductCard
-                product={item}
-                badgeLabel="ORGANIC"
-                onAddToCart={() => {}}
-              />
-            </View>
-          )}
+          renderItem={({ item }) => {
+            const productWithQty: ProductModel = {
+              ...item,
+              cartQuantity:
+                cartQuantities[item.productId ?? 0] ?? item.cartQuantity ?? 0,
+            };
+            return (
+              <View style={styles.productColumn}>
+                <ProductCard
+                  product={productWithQty}
+                  badgeLabel={item.discount ? undefined : ''}
+                  discountPercent={item.discount}
+                  categoryLabel={item.categoryName}
+                  onAddToCart={() => {}}
+                  onQuantityChange={handleQuantityChange}
+                />
+              </View>
+            );
+          }}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={
+            isLoadingMore ? (
+              <View style={styles.loadingFooter}>
+                <ActivityIndicator size="small" />
+              </View>
+            ) : null
+          }
         />
       </View>
     </SafeAreaView>

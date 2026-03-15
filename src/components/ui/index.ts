@@ -11,3 +11,4 @@ export {
   type ConfirmDialogIcon,
 } from './ConfirmDialog';
 export { GlobalLoader, type GlobalLoaderProps } from './GlobalLoader';
+export { QuantitySelector } from './QuantitySelector';

@@ -1,16 +1,19 @@
-import SQLiterAdapter from '@nozbe/watermelondb/adapters/sqlite';
+import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import { DATABASE_NAME } from '../utils/constants';
 import { schema } from '../database/schema';
 import { Database } from '@nozbe/watermelondb';
 import { UserModel } from '../data/models/UserModel';
 import { ConfigModel } from '../data/models/ConfigModel';
+import { CartModel } from '../data/models/CartModel';
+import migrations from '../database/migrations';
 
-const adapter = new SQLiterAdapter({
-    dbName: DATABASE_NAME,
-    schema
+const adapter = new SQLiteAdapter({
+  schema,
+  // migrations,
+  dbName: DATABASE_NAME,
 });
 
 export const database = new Database({
-    adapter,
-    modelClasses:[UserModel, ConfigModel]
+  adapter,
+  modelClasses: [UserModel, ConfigModel, CartModel],
 });

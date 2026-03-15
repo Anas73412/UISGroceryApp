@@ -1,5 +1,5 @@
 export function extractDataArray<T>(
-  res: Record<string, unknown> | unknown[] | null | undefined,
+  res: object | unknown[] | null | undefined,
   path: string[] = ['data'],
 ): T[] {
   if (res == null) return [];

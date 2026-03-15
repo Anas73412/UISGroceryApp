@@ -9,7 +9,8 @@ class UserRepository {
       const table = database.get(DB_TABLES.USER_TABLE);
       const existing = await table.query().fetch();
       await Promise.all(existing.map(record => record.destroyPermanently()));
-      return await table.create(newUser => {
+      return await table.create(userModel => {
+        const newUser = userModel as UserModel;
         newUser.name = user.name ?? '';
         newUser.mobile = user.mobile ?? '';
         newUser.uid = user.id ?? 0;
@@ -26,6 +27,11 @@ class UserRepository {
 
   async getAllUsersFromDB() {
     return database.get(DB_TABLES.USER_TABLE).query().fetch();
+  }
+
+  async getCurrentUser(): Promise<UserModel | null> {
+    const users = await this.getAllUsersFromDB();
+    return users.length > 0 ? (users[0] as UserModel) : null;
   }
 
   async getUserByEmailFromDB(uid: number): Promise<UserModel | null> {
