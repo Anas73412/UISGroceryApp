@@ -23,13 +23,14 @@ import {
 import { extractDataArray } from '../../../utils/utils';
 import { SliderBanner } from '../../../components/ui/Slider/SliderBanner';
 import { useLoading } from '../../../components/context/LoadingContext';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { CategoryModel } from '../../../data/models/CategoryModel';
 import { ProductModel } from '../../../data/models/ProductModel';
 import { CartModel } from '../../../data/models/CartModel';
 import { cartStore } from '../../../store/cartStore';
 
 export function HomeScreen() {
+  const navigation = useNavigation();
   const [products, setProducts] = React.useState<ProductModel[]>([]);
   const [sliders, setSliders] = useState<SliderModel[]>([]);
   const [categories, setCategories] = useState<CategoryModel[]>([]);
@@ -141,6 +142,11 @@ export function HomeScreen() {
     }
   };
 
+  const navigateToCategories = () => {
+    console.log('Clicked Categories');
+    navigation.navigate('CategoryScreen');
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -216,7 +222,7 @@ export function HomeScreen() {
 
               <View style={styles.sectionHeaderRow}>
                 <Text style={styles.sectionTitle}>Shop by Category</Text>
-                <Pressable>
+                <Pressable onPress={navigateToCategories}>
                   <Text style={styles.viewAllText}>View All</Text>
                 </Pressable>
               </View>
