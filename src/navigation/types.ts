@@ -22,6 +22,12 @@ export type AuthStackParamList = {
   ForgotPassword: undefined;
 };
 
+export type HomeStackParamList = {
+  HomeScreen: undefined;
+  CategoryScreen: undefined;
+  SearchScreen: undefined;
+  ProductScreen: { categoryId: number; categoryName: string };
+};
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;
 
@@ -36,5 +42,6 @@ declare global {
     interface RootParamList extends RootStackParamList {}
     interface AuthParamList extends AuthStackParamList {}
     interface MainParamList extends MainTabParamList {}
+    interface HomeParamList extends HomeStackParamList {}
   }
 }

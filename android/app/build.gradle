@@ -118,3 +118,14 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+// Fix: Ensure codegen runs before CMake - prevents "add_subdirectory given source which is not an existing directory"
+afterEvaluate {
+    tasks.matching { it.name.startsWith('configureCMake') }.configureEach { cmakeTask ->
+        rootProject.allprojects.each { project ->
+            if (project.tasks?.findByName('generateCodegenArtifactsFromSchema')) {
+                cmakeTask.dependsOn(":${project.name}:generateCodegenArtifactsFromSchema")
+            }
+        }
+    }
+}

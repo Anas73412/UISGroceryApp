@@ -17,9 +17,16 @@ import { IMAGE_BASE_URL } from '../../utils/constants';
 import { useLoading } from '../../components/context/LoadingContext';
 import { theme } from '../../theme';
 import styles from './CategoryScreen.Style';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { HomeStackParamList } from '../../navigation/types';
+
+type CategoryNavigationProp = NativeStackNavigationProp<
+  HomeStackParamList,
+  'CategoryScreen'
+>;
 
 export function CategoryScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<CategoryNavigationProp>();
   const { show, hide } = useLoading();
   const [categories, setCategories] = useState<CategoryModel[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -79,7 +86,7 @@ export function CategoryScreen() {
       <FlatList
         data={filteredCategories}
         keyExtractor={item => String(item.categoryId)}
-        numColumns={2}
+        numColumns={4}
         columnWrapperStyle={styles.categoryRow}
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
@@ -87,7 +94,12 @@ export function CategoryScreen() {
             <CategoryCard
               label={item.categoryName}
               imagePath={IMAGE_BASE_URL + item.categoryImage}
-              onPress={() => {}}
+              onPress={() => {
+                navigation.navigate('ProductScreen', {
+                  categoryId: item.categoryId,
+                  categoryName: item.categoryName,
+                });
+              }}
             />
           </View>
         )}

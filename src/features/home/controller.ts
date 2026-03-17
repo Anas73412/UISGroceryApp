@@ -1,3 +1,4 @@
+import { CartResponseModel } from '../../data/models/CartModel';
 import CartRepository from '../../data/repositories/CartRepository';
 import { sessionStore } from '../../store/sessionStore';
 import { FAILED, SUCCESS } from '../../utils/constants';
@@ -65,8 +66,8 @@ export const homeController = {
           ]),
         );
         if (cartArr.length > 0) {
-          for (const item of res.data?.products) {
-            const cartInfo = cartMap.get(item.productId);
+          for (const item of res?.data?.products ?? []) {
+            const cartInfo = cartMap.get(item.productId ?? 0);
             item.cartQuantity = cartInfo?.quantity ?? 0;
             item.cartId = cartInfo?.cartId ?? 0;
           }
@@ -93,7 +94,8 @@ export const homeController = {
       const userId = sessionStore.getState().user?.uid ?? 0;
       const res = await homeService.fetchUserCarts(userId);
       if (res.status === SUCCESS) {
-        await CartRepository.saveAllCartInDB(res.data);
+        const carts = (res?.data ?? []) as CartResponseModel[];
+        await CartRepository.saveAllCartInDB(carts);
         return res;
       }
       return {

@@ -28,9 +28,17 @@ import { CategoryModel } from '../../../data/models/CategoryModel';
 import { ProductModel } from '../../../data/models/ProductModel';
 import { CartModel } from '../../../data/models/CartModel';
 import { cartStore } from '../../../store/cartStore';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { HomeStackParamList } from '../../../navigation/types';
+import { ProductScreen } from '../../products/ProductScreen';
+
+type HomeScreenNavigationProp = NativeStackNavigationProp<
+  HomeStackParamList,
+  'HomeScreen'
+>;
 
 export function HomeScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   const [products, setProducts] = React.useState<ProductModel[]>([]);
   const [sliders, setSliders] = useState<SliderModel[]>([]);
   const [categories, setCategories] = useState<CategoryModel[]>([]);
@@ -143,7 +151,6 @@ export function HomeScreen() {
   };
 
   const navigateToCategories = () => {
-    console.log('Clicked Categories');
     navigation.navigate('CategoryScreen');
   };
 
@@ -238,7 +245,12 @@ export function HomeScreen() {
                     label={item.categoryName}
                     imagePath={IMAGE_BASE_URL + item.categoryImage}
                     isSelected={item.categoryId === selectedCategoryId}
-                    onPress={() => setSelectedCategoryId(item.categoryId)}
+                    onPress={() =>
+                      navigation.navigate('ProductScreen', {
+                        categoryId: item.categoryId,
+                        categoryName: item.categoryName,
+                      })
+                    }
                   />
                 )}
               />

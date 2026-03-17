@@ -23,6 +23,10 @@ target 'GroceryApp' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
+  # WatermelonDB - explicit pod (autolinking may fail with new architecture)
+  pod 'WatermelonDB', path: '../node_modules/@nozbe/watermelondb'
+  pod 'simdjson', path: '../node_modules/@nozbe/simdjson', modular_headers: true
+
   post_install do |installer|
     react_native_post_install(
       installer,

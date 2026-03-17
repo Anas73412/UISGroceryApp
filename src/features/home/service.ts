@@ -9,6 +9,7 @@ import { PagingProductResponseModel } from '../../data/reponses/PagingProductRes
 import { CartResponseModel } from '../../data/models/CartModel';
 import { sessionStore } from '../../store/sessionStore';
 import { use } from 'react';
+import { PagingProductModel } from '../../data/models/PagingProductModel';
 
 export const homeService = {
   async fetchSliders(): Promise<ApiResponseModel<SliderResponseModel>> {
@@ -38,13 +39,13 @@ export const homeService = {
     categotyId: number,
     pageNumber: number,
     pageSize: number,
-  ): Promise<ApiResponseModel<PagingProductResponseModel>> {
+  ): Promise<ApiResponseModel<PagingProductModel>> {
     try {
-      const response = await apiClient.post<PagingProductResponseModel>(
+      const response = await apiClient.post<{ data: PagingProductModel }>(
         API_ENDPOINTS.GET_PRODUCTS,
         { categotyId, pageNumber, pageSize },
       );
-      return mapResponse<PagingProductResponseModel>(response);
+      return mapResponse<PagingProductModel>(response);
     } catch (error) {
       return mapErrorResponse(error);
     }

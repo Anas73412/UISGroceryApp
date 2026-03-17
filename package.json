@@ -5,7 +5,7 @@
   "scripts": {
     "postinstall": "patch-package",
     "android": "cross-env JAVA_TOOL_OPTIONS=--enable-native-access=ALL-UNNAMED react-native run-android",
-    "android:clean": "cd android && gradlew.bat clean && cd ..",
+    "android:clean": "cd android && if exist app\\build rmdir /s /q app\\build && if exist app\\.cxx rmdir /s /q app\\.cxx && if exist build rmdir /s /q build && cd ..",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
