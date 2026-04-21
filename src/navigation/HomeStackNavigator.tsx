@@ -4,6 +4,8 @@ import type { HomeStackParamList } from './types';
 import { HomeScreen } from '../features/home/screens/HomeScreen';
 import { CategoryScreen } from '../features/categrories/CategoryScreen';
 import { ProductScreen } from '../features/products/ProductScreen';
+import { ProductDetailScreen } from '../features/productdetails/ProductDetailScreen';
+import { SearchScreen } from '../features/search/SearchScreen';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -12,7 +14,12 @@ export function HomeStackNavigator() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
       <Stack.Screen name="CategoryScreen" component={CategoryScreen} />
+      <Stack.Screen name="SearchScreen" component={SearchScreen} />
       <Stack.Screen name="ProductScreen" component={ProductScreen} />
+      <Stack.Screen
+        name="ProductDetailScreen"
+        component={ProductDetailScreen}
+      />
     </Stack.Navigator>
   );
 }

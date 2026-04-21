@@ -186,7 +186,12 @@ export function HomeScreen() {
                   placeholderTextColor="#9ca3af"
                   style={styles.searchInput}
                 />
-                <Pressable style={styles.filterButton}>
+                <Pressable
+                  style={styles.filterButton}
+                  onPress={() => {
+                    navigation.navigate('SearchScreen');
+                  }}
+                >
                   <Text style={styles.filterIcon}>☰</Text>
                 </Pressable>
               </View>
@@ -278,6 +283,11 @@ export function HomeScreen() {
                   badgeLabel={item.discount ? undefined : ''}
                   discountPercent={item.discount}
                   categoryLabel={item.categoryName}
+                  onPress={p =>
+                    navigation.navigate('ProductDetailScreen', {
+                      product: p as ProductModel,
+                    })
+                  }
                   onAddToCart={() => {}}
                   onQuantityChange={handleQuantityChange}
                 />

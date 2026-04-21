@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   Pressable,
   ScrollView,
   TouchableOpacity,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -14,6 +16,9 @@ import styles from './SettingScreen.style';
 import { useConfirmationDialog } from '../../../components/context/ConfirmationDialogContext';
 import { useMessageDialog } from '../../../components/context/MessageDialogContext';
 import { SettingController } from '../SettingController';
+import { sessionStore } from '../../../store/sessionStore';
+import { UserModel } from '../../../data/models/UserModel';
+import { IMAGE_BASE_URL } from '../../../utils/constants';
 type SettingOption = {
   id: string;
   icon: string;
@@ -58,8 +63,23 @@ const SETTING_OPTIONS: SettingOption[] = [
 
 export function SettingsScreen() {
   const navigation = useNavigation();
+  const [user, setUser] = useState<UserModel | null>();
   const { showConfirm } = useConfirmationDialog();
   const { showErrorDialog } = useMessageDialog();
+  const [imageUri, setImageUri] = useState('');
+  const [isImageLoading, setIsImageLoading] = useState(true);
+  useEffect(() => {
+    const userDetails = sessionStore.getState().user;
+    setUser(userDetails);
+    const rawImage = userDetails?.profile ?? '';
+    const uri = rawImage.startsWith('http')
+      ? rawImage
+      : rawImage
+      ? `${IMAGE_BASE_URL}${rawImage}`
+      : '';
+    console.log('ImageURIL', uri);
+    setImageUri(uri);
+  });
 
   const handleOptionPress = (option: SettingOption) => {
     switch (option.id) {
@@ -125,11 +145,31 @@ export function SettingsScreen() {
           </View>
           <View style={styles.avatarWrapper}>
             <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarInitial}>A</Text>
+              {imageUri ? (
+                <>
+                  <Image
+                    source={{ uri: imageUri }}
+                    style={styles.image}
+                    resizeMode="contain"
+                    onLoadStart={() => setIsImageLoading(true)}
+                    onLoadEnd={() => setIsImageLoading(false)}
+                  />
+                  {isImageLoading && (
+                    <View style={styles.loaderOverlay}>
+                      <ActivityIndicator
+                        size="small"
+                        color={theme.colors.primary}
+                      />
+                    </View>
+                  )}
+                </>
+              ) : (
+                <View style={styles.placeholderImage} />
+              )}
             </View>
           </View>
-          <Text style={styles.profileName}>Anas Mansoori</Text>
-          <Text style={styles.profileContact}>7619983037</Text>
+          <Text style={styles.profileName}>{user?.name ?? 'User'}</Text>
+          <Text style={styles.profileContact}>{user?.mobile ?? ''}</Text>
         </View>
 
         {/* Settings options card */}

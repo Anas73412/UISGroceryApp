@@ -1,0 +1,203 @@
+import { StyleSheet } from 'react-native';
+import { theme } from '../../theme';
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.backgroundSecondary,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing[4],
+    paddingVertical: theme.spacing[3],
+    paddingTop: theme.spacing[5],
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.borderLight,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing[2],
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: -theme.spacing[1],
+  },
+  headerTitle: {
+    fontSize: theme.typography.fontSize['2xl'],
+    fontWeight: '600',
+    color: theme.colors.primary,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing[2],
+  },
+  newsBadge: {
+    backgroundColor: theme.colors.primaryLightBG,
+    paddingHorizontal: theme.spacing[3],
+    paddingVertical: theme.spacing[1],
+    borderRadius: theme.borderRadius.sm,
+  },
+  newsBadgeText: {
+    fontSize: theme.typography.fontSize.xs,
+    fontWeight: '600',
+    color: theme.colors.primary,
+  },
+  cartButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cartBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: theme.colors.error,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  cartBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.white,
+  },
+  scrollContent: {
+    paddingHorizontal: theme.spacing[4],
+    paddingTop: theme.spacing[4],
+    paddingBottom: theme.spacing[10],
+  },
+  card: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing[4],
+    marginBottom: theme.spacing[4],
+    shadowColor: theme.colors.black,
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  userCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    position: 'relative',
+  },
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: theme.colors.gray200,
+  },
+  avatarCameraButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: theme.colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
+  },
+  userInfo: {
+    flex: 1,
+    marginLeft: theme.spacing[4],
+  },
+  userName: {
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: '700',
+    color: theme.colors.gray800,
+    marginBottom: theme.spacing[1],
+  },
+  userPhone: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.gray500,
+  },
+  activeBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: theme.spacing[3],
+    paddingVertical: theme.spacing[1],
+    borderRadius: theme.borderRadius.sm,
+  },
+  activeBadgeText: {
+    fontSize: theme.typography.fontSize.xs,
+    fontWeight: '600',
+    color: theme.colors.white,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing[4],
+    gap: theme.spacing[2],
+  },
+  sectionIcon: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionTitle: {
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: '600',
+    color: theme.colors.secondary,
+  },
+  inputLabel: {
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: '500',
+    color: theme.colors.gray600,
+    marginBottom: theme.spacing[1],
+  },
+  inputField: {
+    backgroundColor: theme.colors.gray50,
+    borderRadius: theme.borderRadius.base,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    paddingHorizontal: theme.spacing[3],
+    paddingVertical: theme.spacing[3],
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.gray800,
+    marginBottom: theme.spacing[4],
+    textAlignVertical: 'top',
+  },
+  inputMultiline: {
+    minHeight: 80,
+  },
+  updateButton: {
+    marginTop: theme.spacing[2],
+  },
+  documentsEmpty: {
+    paddingVertical: theme.spacing[6],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  documentsEmptyText: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.gray500,
+    fontStyle: 'italic',
+  },
+  versionText: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.gray500,
+    textAlign: 'center',
+    marginTop: theme.spacing[4],
+  },
+});
+
+export default styles;

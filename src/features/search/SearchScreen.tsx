@@ -1,3 +1,10 @@
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { HomeStackParamList } from '../../navigation/types';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { useLoading } from '../../components/context/LoadingContext';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ProductModel } from '../../data/models/ProductModel';
+import { searchContoller } from './controller';
 import {
   ActivityIndicator,
   FlatList,
@@ -6,26 +13,20 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import styles from './ProductScreen.Style';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { HomeStackParamList } from '../../navigation/types';
+import styles from './SearchScreen.Style';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { theme } from '../../theme';
-import { useLoading } from '../../components/context/LoadingContext';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ProductModel } from '../../data/models/ProductModel';
-import { productController } from './controller';
 import { ProductCard } from '../home/components/ProductCard';
 
-type ProductNavigationProp = NativeStackNavigationProp<
+type SearchNavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
-  'ProductScreen'
+  'SearchScreen'
 >;
-export function ProductScreen() {
-  const route = useRoute<RouteProp<HomeStackParamList, 'ProductScreen'>>();
-  const { categoryId, categoryName } = route.params;
-  const navigation = useNavigation<ProductNavigationProp>();
+
+export function SearchScreen() {
+  const route = useRoute<RouteProp<HomeStackParamList, 'SearchScreen'>>();
+
+  const navigation = useNavigation<SearchNavigationProp>();
   const { show, hide } = useLoading();
   const [products, setProducts] = useState<ProductModel[]>([]);
   const [cartQuantities, setCartQuantities] = useState<Record<number, number>>(
@@ -46,14 +47,10 @@ export function ProductScreen() {
     else setIsLoadingMore(true);
 
     try {
-      const res = await productController.fetchProducts(
-        categoryId,
-        pageNumber,
-        10,
-      );
+      const res = await searchContoller.fetchProducts(pageNumber, 10);
 
       const pagingData = res?.data;
-      console.log('Produ1Data1', res?.data);
+      console.log('SearchData', res?.data);
       if (pagingData) {
         const newProducts = pagingData.products ?? [];
         setProducts(prev => (append ? [...prev, ...newProducts] : newProducts));
@@ -109,7 +106,7 @@ export function ProductScreen() {
             color={theme.colors.primary}
           />
         </Pressable>
-        <Text style={styles.headerTitle}>{categoryName}</Text>
+        <Text style={styles.headerTitle}>Search Product</Text>
         <View style={styles.headerRight}></View>
       </View>
       {/** Search Product */}

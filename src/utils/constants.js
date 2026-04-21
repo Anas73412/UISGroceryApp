@@ -4,6 +4,7 @@ export const SUCCESS = 'Success';
 export const FAILED = 'Failed';
 export const SUB_PATH='/api/unitedweb';
 export const IMAGE_BASE_URL='https://unitedinternetservice.in/';
+export const RUPEE_SIGN='\u20B9';
 
 //API Endpoints
 export const API_ENDPOINTS = {

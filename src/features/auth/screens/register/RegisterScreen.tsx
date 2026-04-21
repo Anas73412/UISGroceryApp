@@ -13,7 +13,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { styles } from './RegisterScreen.styles';
 import { Input, Button, Link } from '../../../../components/ui';
 import { AuthStackParamList } from '../../../../navigation/types';
-
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { theme } from '../../../../theme';
 const appIcon = require('../../../../assets/images/app_icon.png');
 
 const labelUppercase = styles.labelUppercase;
@@ -48,8 +49,18 @@ export function RegisterScreen({ navigation }: RegisterScreenProps) {
       >
         {/* Header: back + title */}
         <View style={styles.headerBar}>
-          <Pressable style={styles.backButton} onPress={() => navigation.goBack()} hitSlop={12}>
-            <Text style={styles.backArrow}>&lt;</Text>
+          <Pressable
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+            hitSlop={12}
+          >
+            <Text style={styles.backArrow}>
+              <MaterialIcons
+                name="arrow-back"
+                size={22}
+                color={theme.colors.primary}
+              />
+            </Text>
           </Pressable>
           <Text style={styles.headerTitle}>Register</Text>
           <View style={styles.headerSpacer} />
@@ -60,7 +71,9 @@ export function RegisterScreen({ navigation }: RegisterScreenProps) {
             <Image source={appIcon} style={styles.logo} resizeMode="contain" />
           </View>
           <Text style={styles.welcomeTitle}>Create Account</Text>
-          <Text style={styles.welcomeSubtitle}>Join our grocery community today</Text>
+          <Text style={styles.welcomeSubtitle}>
+            Join our grocery community today
+          </Text>
         </View>
 
         <View style={styles.card}>
@@ -88,7 +101,13 @@ export function RegisterScreen({ navigation }: RegisterScreenProps) {
           <Input
             label="Mobile Number"
             labelStyle={labelUppercase}
-            leftIcon={<Text style={styles.inputIcon}>📱</Text>}
+            leftIcon={
+              <MaterialIcons
+                name="phone"
+                size={24}
+                color={theme.colors.primary}
+              />
+            }
             placeholder="Enter your mobile number"
             value={mobile}
             onChangeText={setMobile}
@@ -99,7 +118,13 @@ export function RegisterScreen({ navigation }: RegisterScreenProps) {
           <Input
             label="Email Address"
             labelStyle={labelUppercase}
-            leftIcon={<Text style={styles.inputIcon}>✉️</Text>}
+            leftIcon={
+              <MaterialIcons
+                name="email"
+                size={24}
+                color={theme.colors.primary}
+              />
+            }
             placeholder="Enter your email"
             value={email}
             onChangeText={setEmail}
@@ -110,14 +135,37 @@ export function RegisterScreen({ navigation }: RegisterScreenProps) {
           <Input
             label="Password"
             labelStyle={labelUppercase}
-            leftIcon={<Text style={styles.inputIcon}>🔒</Text>}
+            leftIcon={
+              <MaterialIcons
+                name="lock"
+                size={24}
+                color={theme.colors.primary}
+              />
+            }
             placeholder="Enter your password"
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
             rightElement={
-              <Pressable onPress={() => setShowPassword(!showPassword)} hitSlop={12}>
-                <Text style={styles.inputIcon}>{showPassword ? '🙈' : '👁'}</Text>
+              <Pressable
+                onPress={() => setShowPassword(!showPassword)}
+                hitSlop={12}
+              >
+                <Text style={styles.inputIcon}>
+                  {showPassword ? (
+                    <MaterialIcons
+                      name="visibility-off"
+                      size={22}
+                      color={theme.colors.gray400}
+                    />
+                  ) : (
+                    <MaterialIcons
+                      name="visibility"
+                      size={22}
+                      color={theme.colors.primary}
+                    />
+                  )}
+                </Text>
               </Pressable>
             }
             containerStyle={{ marginBottom: 12 }}
@@ -126,7 +174,13 @@ export function RegisterScreen({ navigation }: RegisterScreenProps) {
           <Input
             label="Confirm Password"
             labelStyle={labelUppercase}
-            leftIcon={<Text style={styles.inputIcon}>🔒</Text>}
+            leftIcon={
+              <MaterialIcons
+                name="lock"
+                size={24}
+                color={theme.colors.primary}
+              />
+            }
             placeholder="Confirm your password"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
@@ -137,15 +191,17 @@ export function RegisterScreen({ navigation }: RegisterScreenProps) {
             style={[styles.termsRow, { marginBottom: 20 }]}
             onPress={() => setAgreedToTerms(!agreedToTerms)}
           >
-            <View style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}>
+            <View
+              style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}
+            >
               {agreedToTerms ? <View style={styles.checkboxDot} /> : null}
             </View>
             <Text style={styles.termsText}>
               I agree with the{' '}
               <Text style={styles.termsLink} onPress={() => {}}>
                 Terms and Conditions
-              </Text>
-              {' '}and{' '}
+              </Text>{' '}
+              and{' '}
               <Text style={styles.termsLink} onPress={() => {}}>
                 Privacy Policy.
               </Text>

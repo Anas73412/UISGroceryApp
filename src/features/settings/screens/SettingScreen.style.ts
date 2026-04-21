@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: theme.colors.primaryLightBG || theme.colors.primary,
+    backgroundColor: theme.colors.white,
     opacity: 0.9,
     alignItems: 'center',
     justifyContent: 'center',
@@ -145,6 +145,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.gray500,
+  },
+  image: {
+    width: '100%',
+    height: 120,
+  },
+  placeholderImage: {
+    width: '100%',
+    height: 120,
+    backgroundColor: theme.colors.gray200,
+  },
+  loaderOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: theme.colors.surfaceSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 export default styles;

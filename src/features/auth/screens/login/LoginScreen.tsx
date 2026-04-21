@@ -23,6 +23,8 @@ import { useMessageDialog } from '../../../../components/context/MessageDialogCo
 import { useLoading } from '../../../../components/context/LoadingContext';
 import { LoginController } from './LoginController';
 import { SUCCESS } from '../../../../utils/constants';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { theme } from '../../../../theme';
 
 const appIcon = require('../../../../assets/images/app_icon.png');
 
@@ -101,7 +103,13 @@ export function LoginScreen({ navigation }: LoginScreenProps) {
         <View style={styles.card}>
           <Input
             label="Mobile Number"
-            leftIcon={<Text style={styles.inputIcon}>📱</Text>}
+            leftIcon={
+              <MaterialIcons
+                name="phone"
+                size={28}
+                color={theme.colors.primary}
+              />
+            }
             placeholder="Enter your mobile number"
             value={mobile}
             onChangeText={setMobile}
@@ -111,7 +119,13 @@ export function LoginScreen({ navigation }: LoginScreenProps) {
 
           <Input
             label="Password"
-            leftIcon={<Text style={styles.inputIcon}>🔒</Text>}
+            leftIcon={
+              <MaterialIcons
+                name="lock"
+                size={28}
+                color={theme.colors.primary}
+              />
+            }
             placeholder="Enter your password"
             value={password}
             onChangeText={setPassword}
@@ -122,7 +136,19 @@ export function LoginScreen({ navigation }: LoginScreenProps) {
                 hitSlop={12}
               >
                 <Text style={styles.inputIcon}>
-                  {showPassword ? '🙈' : '👁'}
+                  {showPassword ? (
+                    <MaterialIcons
+                      name="visibility"
+                      size={22}
+                      color={theme.colors.gray400}
+                    />
+                  ) : (
+                    <MaterialIcons
+                      name="visibility-off"
+                      size={22}
+                      color={theme.colors.primary}
+                    />
+                  )}
                 </Text>
               </Pressable>
             }

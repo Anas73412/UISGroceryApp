@@ -4,6 +4,7 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { theme } from '../theme';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { cartStore } from '../store/cartStore';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
 const TAB_ICONS: Record<string, string> = {
   HomeTab: 'home',
@@ -20,6 +21,7 @@ const TAB_LABELS: Record<string, string> = {
   ProfileTab: 'Profile',
   SettingsTab: 'Setting',
 };
+const HIDE_TAB_BAR_ROUTES = ['ProductScreen', 'ProductDetailScreen'];
 
 export function BottomTabBar({
   state,
@@ -27,7 +29,18 @@ export function BottomTabBar({
   navigation,
 }: BottomTabBarProps) {
   const cartCount = cartStore(s => s.items.length);
-  console.log('CartCount: ', cartCount);
+  const route = state.routes[state.index];
+  const routeName = getFocusedRouteNameFromRoute({
+    params: route.params,
+    name: route.name,
+  });
+  const currentRoute = route.state?.routes?.[route.state?.index ?? 1];
+  const focusedRouteName = currentRoute?.name ?? routeName;
+
+  const shouldHide = HIDE_TAB_BAR_ROUTES.includes(focusedRouteName ?? 'Home');
+
+  if (shouldHide) return null;
+
   return (
     <View style={styles.wrapper}>
       <View style={styles.container}>

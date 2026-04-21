@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { theme } from '../../../theme';
 import { QuantitySelector } from '../../../components/ui/QuantitySelector';
-import { IMAGE_BASE_URL } from '../../../utils/constants';
+import { IMAGE_BASE_URL, RUPEE_SIGN } from '../../../utils/constants';
 import { cartStore } from '../../../store/cartStore';
 import { cartController } from '../../cart/controller';
 import { CartModel, CartResponseModel } from '../../../data/models/CartModel';
@@ -229,10 +229,12 @@ export function ProductCard({
             </Text>
           ) : null}
           <View style={styles.priceRow}>
-            <Text style={styles.price}>${displayPrice.toFixed(2)}</Text>
+            <Text style={styles.price}>
+              {RUPEE_SIGN + displayPrice.toFixed(2)}
+            </Text>
             {showOriginalPrice && computedOriginalPrice != null && (
               <Text style={styles.originalPrice}>
-                ${computedOriginalPrice.toFixed(2)}
+                {RUPEE_SIGN + computedOriginalPrice.toFixed(2)}
               </Text>
             )}
           </View>
