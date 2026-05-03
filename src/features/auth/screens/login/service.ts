@@ -6,7 +6,7 @@ import { apiClient } from '../../../../services/apiClient';
 import { ApiResponseModel } from '../../../../services/types';
 import { API_ENDPOINTS, FAILED, SUCCESS } from '../../../../utils/constants';
 
-interface LoginApiResponse {
+export interface LoginApiResponse {
   status: string;
   data?: UserResponseModel;
   message: string;

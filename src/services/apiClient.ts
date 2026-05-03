@@ -24,7 +24,9 @@ async function request<T>(
   config: RequestConfig = {},
 ): Promise<T> {
   const { method = 'GET', body, headers = {} } = config;
-  const url = `${BASE_URL}${path}`;
+
+  const isAbsoluteURL = /^https?:\/\//i.test(path);
+  const url = isAbsoluteURL ? path : `${BASE_URL}${path}`;
 
   const axiosConfig: AxiosRequestConfig = {
     url,

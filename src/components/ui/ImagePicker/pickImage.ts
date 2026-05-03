@@ -7,6 +7,7 @@ import {
   PhotoQuality,
 } from 'react-native-image-picker';
 import { ImagePickerMode, PickedImageAsset } from './ImagePicker.types';
+import { ensureCameraPermission } from './imagePickerPermissions';
 
 function mapAsset(a: Asset): PickedImageAsset | null {
   const uri = a.uri;
@@ -53,7 +54,7 @@ export type PickResult = {
   errorMessage?: string;
 };
 
-export function pickGallary(
+export async function pickGallary(
   mode: ImagePickerMode,
   maxFiles: number,
   quality: PhotoQuality,
@@ -80,8 +81,8 @@ export function pickGallary(
           errorMessage:
             response.errorMessage ??
             (response.errorCode === 'permission'
-              ? 'Photo liberary permission denied'
-              : 'could not open gallary'),
+              ? 'Photo library permission denied.'
+              : 'Could not open gallery.'),
         });
         return;
       }
@@ -92,11 +93,19 @@ export function pickGallary(
   });
 }
 
-export function pickFromCamera(
+export async function pickFromCamera(
   quality: PhotoQuality,
   maxWidth: number | undefined,
   maxHeight: number | undefined,
 ): Promise<PickResult> {
+  const allowed = await ensureCameraPermission();
+  if (!allowed) {
+    return {
+      assets: [],
+      errorMessage: 'Camera access was denied. Enable it in Settings.',
+    };
+  }
+
   const options: CameraOptions = {
     mediaType: 'photo',
     quality,
@@ -118,8 +127,8 @@ export function pickFromCamera(
           errorMessage:
             response.errorMessage ??
             (response.errorCode === 'permission'
-              ? 'Camera Permission denied.'
-              : 'could not open camera.'),
+              ? 'Camera permission denied.'
+              : 'Could not open camera.'),
         });
         return;
       }

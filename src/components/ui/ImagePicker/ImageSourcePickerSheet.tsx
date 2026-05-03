@@ -1,157 +1,201 @@
-import { useCallback } from 'react';
-import { ImageSourcePickerSheetProps } from './ImagePicker.types';
-import { pickFromCamera, pickGallary } from './pickImage';
+import React, { useCallback, useMemo } from 'react';
+import { Alert, Modal, View, Text, Pressable, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { PhotoQuality } from 'react-native-image-picker';
 import { theme } from '../../../theme';
-import { Modal, Pressable, StyleSheet, Text } from 'react-native';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { Button } from '../Button';
+import { ImageSourcePickerSheetProps } from './ImagePicker.types';
+import { pickFromCamera, pickGallary } from './pickImage';
+import { styles } from './ImageSourcePickerSheet.styles';
+
+const DEFAULT_SUBTITLE = 'Choose how you would like to add your photo.';
+
+const textAndroidTight: object =
+  Platform.OS === 'android' ? { includeFontPadding: false } : {};
+
 export function ImageSourcePickerSheet({
   visible,
   onRequestClose,
   onPick,
   mode = 'single',
   maxFiles = 10,
-  title = 'Choose Photo',
-  quality = 0.8 as PhotoQuality,
+  title = 'Profile photo',
+  subtitle = DEFAULT_SUBTITLE,
+  quality = 0.8,
   maxWidth = 2048,
   maxHeight = 2048,
   onError,
 }: ImageSourcePickerSheetProps) {
+  const insets = useSafeAreaInsets();
+  const q = useMemo(() => quality as PhotoQuality, [quality]);
+  const bottomPadding = useMemo(
+    () => Math.max(insets.bottom, theme.spacing[3]),
+    [insets.bottom],
+  );
+
+  const runAfterSheetClose = useCallback(
+    (task: () => void) => {
+      onRequestClose();
+      setTimeout(task, 260);
+    },
+    [onRequestClose],
+  );
+
   const runGallery = useCallback(async () => {
-    onRequestClose();
     const { assets, errorMessage } = await pickGallary(
       mode,
       maxFiles,
-      0.8,
+      q,
       maxWidth,
       maxHeight,
     );
-    if (errorMessage) onError?.(errorMessage);
+    if (errorMessage) {
+      Alert.alert('Gallery error', errorMessage);
+      onError?.(errorMessage);
+    }
     onPick(assets);
-  }, [
-    mode,
-    maxFiles,
-    quality,
-    maxWidth,
-    maxHeight,
-    onPick,
-    onRequestClose,
-    onError,
-  ]);
-  const runCamera = useCallback(async () => {
-    onRequestClose();
-    const { assets, errorMessage } = await pickFromCamera(
-      0.8,
-      maxWidth,
-      maxHeight,
-    );
-    if (errorMessage) onError?.(errorMessage);
-    onPick(assets);
-  }, [quality, maxWidth, maxHeight, onPick, onRequestClose, onError]);
+  }, [mode, maxFiles, q, maxWidth, maxHeight, onPick, onError]);
 
+  const runCamera = useCallback(async () => {
+    const { assets, errorMessage } = await pickFromCamera(
+      q,
+      maxWidth,
+      maxHeight,
+    );
+    if (errorMessage) {
+      Alert.alert('Camera error', errorMessage);
+      onError?.(errorMessage);
+    }
+    onPick(assets);
+  }, [q, maxWidth, maxHeight, onPick, onError]);
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="fade"
+      animationType="slide"
       statusBarTranslucent
       onRequestClose={onRequestClose}
     >
-      <Pressable style={styles.overlay} onPress={onRequestClose}>
+      <View style={styles.overlay}>
         <Pressable
-          style={styles.card}
-          onPress={e => e.stopPropagation()}
-          accessibilityRole="menu"
-        >
-          <Text style={styles.title}>{title}</Text>
-          <Pressable style={styles.row} onPress={runGallery}>
-            <MaterialIcons
-              name="photo-library"
-              size={24}
-              color={theme.colors.primary}
-            />
-            <Text style={styles.rowLabel}>Gallery</Text>
-            <MaterialIcons
-              name="chevron-right"
-              size={22}
-              color={theme.colors.gray400}
-            />
+          style={styles.pressableAutofill}
+          onPress={onRequestClose}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+        />
+        <View style={[styles.safeArea, { paddingBottom: bottomPadding }]}>
+          <Pressable
+            style={styles.panel}
+            onPress={e => e.stopPropagation()}
+            accessibilityRole="menu"
+            accessibilityViewIsModal
+          >
+            <View style={styles.dragHandle} accessibilityElementsHidden />
+            <View style={styles.headerRow}>
+              <View style={styles.headerIconWrap}>
+                <MaterialIcons
+                  name="add-a-photo"
+                  size={28}
+                  color={theme.colors.primary}
+                />
+              </View>
+              <View style={styles.headerTextCol}>
+                <Text style={[styles.title, textAndroidTight]}>{title}</Text>
+                <Text
+                  style={[styles.subtitle, textAndroidTight]}
+                  numberOfLines={3}
+                >
+                  {subtitle}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.optionsBlock}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.optionPressable,
+                  pressed && styles.optionPressed,
+                ]}
+                onPress={() => runAfterSheetClose(() => void runGallery())}
+                accessibilityRole="button"
+                accessibilityLabel="Choose from gallery"
+              >
+                <View style={styles.optionCard}>
+                  <View style={styles.optionIconGallery}>
+                    <MaterialIcons
+                      name="photo-library"
+                      size={26}
+                      color={theme.colors.primary}
+                    />
+                  </View>
+                  <View style={styles.optionTextCol}>
+                    <Text style={[styles.optionTitle, textAndroidTight]}>
+                      Gallery
+                    </Text>
+                    <Text
+                      style={[styles.optionSub, textAndroidTight]}
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                    >
+                      Browse photos you already have
+                    </Text>
+                  </View>
+                  <Text style={styles.optionChevronText} accessible={false}>
+                    ›
+                  </Text>
+                </View>
+              </Pressable>
+
+              <Pressable
+                style={({ pressed }) => [
+                  styles.optionPressable,
+                  styles.optionLast,
+                  pressed && styles.optionPressed,
+                ]}
+                onPress={() => runAfterSheetClose(() => void runCamera())}
+                accessibilityRole="button"
+                accessibilityLabel="Open camera"
+              >
+                <View style={styles.optionCard}>
+                  <View style={styles.optionIconCamera}>
+                    <MaterialIcons
+                      name="photo-camera"
+                      size={26}
+                      color={theme.colors.secondary}
+                    />
+                  </View>
+                  <View style={styles.optionTextCol}>
+                    <Text style={[styles.optionTitle, textAndroidTight]}>
+                      Camera
+                    </Text>
+                    <Text
+                      style={[styles.optionSub, textAndroidTight]}
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                    >
+                      Take a new picture now
+                    </Text>
+                  </View>
+                  <Text style={styles.optionChevronText} accessible={false}>
+                    ›
+                  </Text>
+                </View>
+              </Pressable>
+            </View>
+
+            <View style={styles.cancelWrap}>
+              <Button
+                title="Cancel"
+                variant="outline"
+                onPress={onRequestClose}
+                containerStyle={styles.cancelButton}
+                accessibilityLabel="Cancel"
+              />
+            </View>
           </Pressable>
-          <Pressable style={styles.row} onPress={runCamera}>
-            <MaterialIcons
-              name="photo-camera"
-              size={24}
-              color={theme.colors.primary}
-            />
-            <Text style={styles.rowLabel}>Camera</Text>
-            <MaterialIcons
-              name="chevron-right"
-              size={22}
-              color={theme.colors.gray400}
-            />
-          </Pressable>
-          <Pressable style={styles.cancelBtn} onPress={onRequestClose}>
-            <Text style={styles.cancelText}>Cancel</Text>
-          </Pressable>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-    padding: theme.spacing[4],
-    paddingBottom: theme.spacing[6],
-  },
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    paddingVertical: theme.spacing[2],
-    maxWidth: 400,
-    alignSelf: 'center',
-    width: '100%',
-    shadowColor: theme.colors.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  title: {
-    fontSize: theme.typography.fontSize.sm,
-    fontWeight: '600',
-    color: theme.colors.gray500,
-    textAlign: 'center',
-    paddingVertical: theme.spacing[3],
-    paddingHorizontal: theme.spacing[4],
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: theme.spacing[4],
-    paddingHorizontal: theme.spacing[4],
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: theme.colors.gray200,
-  },
-  rowLabel: {
-    flex: 1,
-    marginLeft: theme.spacing[3],
-    fontSize: theme.typography.fontSize.base,
-    color: theme.colors.gray800,
-    fontWeight: '500',
-  },
-  cancelBtn: {
-    marginTop: theme.spacing[2],
-    paddingVertical: theme.spacing[4],
-    alignItems: 'center',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: theme.colors.gray200,
-  },
-  cancelText: {
-    fontSize: theme.typography.fontSize.base,
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-});

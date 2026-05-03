@@ -5,6 +5,10 @@ export {
   mapAssetsToPicked,
   type PickResult,
 } from './pickImage';
+export {
+  ensureCameraPermission,
+  ensurePhotoLibraryPermission,
+} from './imagePickerPermissions';
 export type {
   ImagePickerMode,
   PickedImageAsset,

@@ -7,7 +7,7 @@ import {
   TextInput,
   Image,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../theme';
 import { sessionStore } from '../../store/sessionStore';
@@ -15,42 +15,114 @@ import { cartStore } from '../../store/cartStore';
 import { profileController } from './controller';
 import { Button, Input } from '../../components/ui';
 import styles from './ProfileScreen.Style';
-import { IMAGE_BASE_URL } from '../../utils/constants';
+import { IMAGE_BASE_URL, SUCCESS } from '../../utils/constants';
 import { ImageSourcePickerSheet } from '../../components/ui/ImagePicker';
 import Toast from 'react-native-toast-message';
+import { UserResponseModel } from '../../data/models/UserModel';
+import { useLoading } from '../../components/context/LoadingContext';
 
 export function ProfileScreen() {
   const navigation = useNavigation();
-  const user = sessionStore(s => s.user);
   const cartCount = cartStore(s => s.items.length);
-
+  const [user, setUser] = useState<UserResponseModel | null>(null);
   const [name, setName] = useState(user?.name ?? '');
   const [email, setEmail] = useState('');
   const [pickerOpen, setPickerOpen] = useState(false);
   const [localUri, setLocalUri] = useState<string | null>(null);
-  const [billingAddress, setBillingAddress] = useState(user?.address ?? '');
-  const [correspondenceAddress, setCorrespondenceAddress] = useState('');
+  const [billingAddress, setBillingAddress] = useState(user?.Address ?? '');
+  const [correspondenceAddress, setCorrespondenceAddress] = useState(
+    user?.billing_address ?? '',
+  );
+  const { show, hide } = useLoading();
+  const [adhaarFront, setAdhaarFront] = useState<string | null>(null);
+  const [adhaarBack, setAdhaarBack] = useState<string | null>(null);
 
-  useEffect(() => {
-    const u = sessionStore.getState().user;
-    if (u) {
-      setName(u.name ?? '');
-      setBillingAddress(u.address ?? '');
-    }
-  }, [user?.uid]);
+  const [isUploading, setIsUploading] = useState(false);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      getProfileDetails();
+    }, []),
+  );
 
   const handleUpdate = async () => {
-    await profileController.updateProfile({
-      name,
-      address: billingAddress,
+    show('Updating...');
+    const res = await profileController.updateProfile({
+      name: name,
+      Address: billingAddress,
+      billing_address: correspondenceAddress,
+      email: email,
+      mobile: user?.mobile ?? undefined,
     });
+
+    hide();
+    if (res.status === SUCCESS) {
+      Toast.show({
+        type: 'success',
+        text1: res.message || 'Profile updated successfully',
+      });
+    } else {
+      Toast.show({
+        type: 'error',
+        text1: res.message || 'Failed to update profile',
+      });
+    }
+  };
+
+  const getProfileDetails = async () => {
+    show('Fetching...');
+    const res = await profileController.fetchUserProfile();
+    if (res != null && res.status === SUCCESS && res.data) {
+      setUser(res.data);
+      setName(res.data.name ?? '');
+      setEmail(res.data.email ?? '');
+      setBillingAddress(res.data.Address ?? '');
+      setCorrespondenceAddress(res.data.billing_address ?? '');
+      setAdhaarFront(
+        res.data.adhaar_front ? IMAGE_BASE_URL + res.data.adhaar_front : null,
+      );
+      setAdhaarBack(
+        res.data.adhaar_back ? IMAGE_BASE_URL + res.data.adhaar_back : null,
+      );
+    }
+    hide();
   };
 
   const handleCartPress = () => {
-    setPickerOpen(true);
-    // navigation.navigate('CartTab' as never);
+    navigation.navigate('CartTab' as never);
   };
 
+  const handleImageUpload = async (asset: {
+    uri: string;
+    type?: string;
+    fileName?: string;
+  }) => {
+    try {
+      setIsUploading(true);
+      setLocalUri(asset.uri);
+      const res = await profileController.uploadProfilePic(asset);
+      if (res.status === SUCCESS) {
+        Toast.show({
+          type: 'success',
+          text1: res.message || 'Profile picture updated successfully',
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: res.message || 'Failed to update profile picture',
+        });
+      }
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1:
+          error?.message ||
+          'An error occurred while uploading the profile picture',
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -96,21 +168,15 @@ export function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* User Info Card */}
-        <ImageSourcePickerSheet
-          visible={pickerOpen}
-          onRequestClose={() => setPickerOpen(false)}
-          mode="single"
-          onPick={assets => {
-            if (assets[0]) setLocalUri(assets[0].uri);
-            console.log('Picked image:', assets[0].uri);
-          }}
-          onError={msg => Toast.show({ type: 'error', text1: msg })}
-        />
         <View style={[styles.card, styles.userCard]}>
           <View style={styles.avatarContainer}>
-            {user?.profile ? (
+            {localUri != null || user?.profile ? (
               <Image
-                source={{ uri: IMAGE_BASE_URL + user.profile }}
+                source={{
+                  uri:
+                    localUri ??
+                    (user?.profile ? IMAGE_BASE_URL + user.profile : ''),
+                }}
                 style={styles.avatar}
               />
             ) : (
@@ -127,7 +193,14 @@ export function ProfileScreen() {
                 />
               </View>
             )}
-            <Pressable style={styles.avatarCameraButton}>
+            <Pressable
+              style={styles.avatarCameraButton}
+              onPress={() => {
+                console.log('Opening image picker');
+                setPickerOpen(true);
+              }}
+              hitSlop={8}
+            >
               <MaterialIcons
                 name="camera-alt"
                 size={14}
@@ -136,8 +209,8 @@ export function ProfileScreen() {
             </Pressable>
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>{user?.name ?? 'Anas Mansoori'}</Text>
-            <Text style={styles.userPhone}>{user?.mobile ?? '7619983037'}</Text>
+            <Text style={styles.userName}>{user?.name ?? ''}</Text>
+            <Text style={styles.userPhone}>{user?.mobile ?? ''}</Text>
             <View style={styles.activeBadge}>
               <Text style={styles.activeBadgeText}>Active</Text>
             </View>
@@ -209,16 +282,68 @@ export function ProfileScreen() {
             </View>
             <Text style={styles.sectionTitle}>Documents</Text>
           </View>
-          <View style={styles.documentsEmpty}>
-            <Text style={styles.documentsEmptyText}>
-              No documents uploaded yet.
-            </Text>
+          <View style={styles.documentsRow}>
+            <View style={styles.documentCard}>
+              <View style={styles.documentImageWrap}>
+                {adhaarFront ? (
+                  <Image
+                    source={{ uri: adhaarFront }}
+                    style={styles.documentImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={styles.documentPlaceholder}>
+                    <MaterialIcons
+                      name="badge"
+                      size={36}
+                      color={theme.colors.gray400}
+                    />
+                  </View>
+                )}
+              </View>
+              <Text style={styles.documentTitle}>Aadhaar (Front)</Text>
+            </View>
+            <View style={styles.documentCard}>
+              <View style={styles.documentImageWrap}>
+                {adhaarBack ? (
+                  <Image
+                    source={{ uri: adhaarBack }}
+                    style={styles.documentImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={styles.documentPlaceholder}>
+                    <MaterialIcons
+                      name="badge"
+                      size={36}
+                      color={theme.colors.gray400}
+                    />
+                  </View>
+                )}
+              </View>
+              <Text style={styles.documentTitle}>Aadhaar (Back)</Text>
+            </View>
           </View>
         </View>
 
         {/* Version */}
         <Text style={styles.versionText}>v1.1.11 (11)</Text>
       </ScrollView>
+
+      <ImageSourcePickerSheet
+        visible={pickerOpen}
+        onRequestClose={() => setPickerOpen(false)}
+        mode="single"
+        title="Update profile picture"
+        subtitle="Pick a photo you already have, or take a new one with the camera."
+        onPick={assets => {
+          const first = assets[0];
+          if (first) {
+            handleImageUpload(first);
+          }
+        }}
+        onError={msg => Toast.show({ type: 'error', text1: msg })}
+      />
     </View>
   );
 }

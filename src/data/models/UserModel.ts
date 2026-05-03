@@ -8,7 +8,7 @@ export interface UserResponseModel {
   email: string | null;
   mobile: string;
   password: string;
-  address: string | null;
+  Address: string | null;
   billing_address: string | null;
   adhaar_no: string | null;
   adhaar_front: string | null;

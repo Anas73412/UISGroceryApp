@@ -1,0 +1,141 @@
+import { StyleSheet } from 'react-native';
+import { theme } from '../../theme';
+
+/** Shared layout for About Us / Contact Us (Profile-like header + cards) */
+export const staticScreenStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.backgroundSecondary,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing[4],
+    paddingVertical: theme.spacing[3],
+    paddingTop: theme.spacing[5],
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.borderLight,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: -theme.spacing[1],
+  },
+  headerTitle: {
+    fontSize: theme.typography.fontSize['2xl'],
+    fontWeight: '600',
+    color: theme.colors.primary,
+  },
+  headerRight: { width: 40 },
+  scroll: { flex: 1 },
+  scrollContent: {
+    paddingHorizontal: theme.spacing[4],
+    paddingTop: theme.spacing[4],
+    paddingBottom: theme.spacing[10],
+  },
+  card: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing[4],
+    marginBottom: theme.spacing[4],
+    shadowColor: theme.colors.black,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
+  },
+  hero: {
+    alignItems: 'center',
+    paddingVertical: theme.spacing[2],
+  },
+  heroIconWrap: {
+    width: 88,
+    height: 88,
+    borderRadius: 22,
+    backgroundColor: 'rgba(57, 175, 188, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing[4],
+  },
+  appName: {
+    fontSize: theme.typography.fontSize['2xl'],
+    fontWeight: '700',
+    color: theme.colors.secondary,
+  },
+  tagline: {
+    marginTop: theme.spacing[2],
+    fontSize: theme.typography.fontSize.base,
+    lineHeight: 24,
+    color: theme.colors.gray600,
+    textAlign: 'center',
+  },
+  bodyText: {
+    fontSize: theme.typography.fontSize.base,
+    lineHeight: 24,
+    color: theme.colors.gray700,
+  },
+  sectionLabel: {
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: '600',
+    color: theme.colors.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: theme.spacing[2],
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing[3],
+    gap: theme.spacing[2],
+  },
+  valueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: theme.spacing[3],
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: theme.colors.borderLight,
+  },
+  valueRowFirst: {
+    borderTopWidth: 0,
+    paddingTop: 0,
+  },
+  valueIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(57, 175, 188, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: theme.spacing[3],
+  },
+  valueTextCol: {
+    flex: 1,
+  },
+  valueLabel: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.gray500,
+    marginBottom: 2,
+  },
+  valueValue: {
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: '600',
+    color: theme.colors.gray800,
+  },
+  versionPill: {
+    alignSelf: 'center',
+    backgroundColor: theme.colors.gray100,
+    paddingHorizontal: theme.spacing[4],
+    paddingVertical: theme.spacing[2],
+    borderRadius: theme.borderRadius.full,
+    marginTop: theme.spacing[2],
+  },
+  versionText: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.gray500,
+    fontWeight: '500',
+  },
+});

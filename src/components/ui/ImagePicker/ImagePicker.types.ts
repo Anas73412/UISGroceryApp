@@ -15,6 +15,8 @@ export type ImageSourcePickerSheetProps = {
   mode?: ImagePickerMode;
   maxFiles?: number;
   title?: string;
+  /** Subtext under the title (e.g. hint for the user). */
+  subtitle?: string;
   quality?: number;
   maxWidth?: number;
   maxHeight?: number;

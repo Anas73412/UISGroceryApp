@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { SettingsStackParamList } from '../../../navigation/types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../../theme';
 import styles from './SettingScreen.style';
@@ -61,8 +63,13 @@ const SETTING_OPTIONS: SettingOption[] = [
   },
 ];
 
+type SettingsNav = NativeStackNavigationProp<
+  SettingsStackParamList,
+  'SettingsMain'
+>;
+
 export function SettingsScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<SettingsNav>();
   const [user, setUser] = useState<UserModel | null>();
   const { showConfirm } = useConfirmationDialog();
   const { showErrorDialog } = useMessageDialog();
@@ -83,6 +90,21 @@ export function SettingsScreen() {
 
   const handleOptionPress = (option: SettingOption) => {
     switch (option.id) {
+      case 'about':
+        navigation.navigate('AboutUs');
+        break;
+      case 'contact':
+        navigation.navigate('ContactUs');
+        break;
+      case 'delivery':
+        showErrorDialog('Coming soon', 'Delivery address will be available soon.');
+        break;
+      case 'requests':
+        showErrorDialog(
+          'Coming soon',
+          'My product requests will be available soon.',
+        );
+        break;
       case 'logout':
         showConfirm({
           title: 'Logout',
@@ -98,14 +120,16 @@ export function SettingsScreen() {
             /* optional */
           },
         });
+        break;
+      default:
+        break;
     }
   };
 
   const logout = async () => {
-    console.log('onLogotu');
     const isCleared = await SettingController.logout();
     if (isCleared) {
-      navigation.getParent()?.reset({
+      navigation.getParent()?.getParent()?.reset({
         index: 0,
         routes: [{ name: 'Auth' }],
       });
@@ -119,7 +143,7 @@ export function SettingsScreen() {
       {/* Header: back arrow + title only */}
       <View style={styles.header}>
         <Pressable
-          onPress={() => navigation.goBack()}
+          onPress={() => navigation.getParent()?.navigate('HomeTab' as never)}
           style={styles.backButton}
           hitSlop={12}
         >

@@ -30,6 +30,12 @@ export type HomeStackParamList = {
   ProductScreen: { categoryId: number; categoryName: string };
   ProductDetailScreen: { product: ProductModel };
 };
+
+export type SettingsStackParamList = {
+  SettingsMain: undefined;
+  AboutUs: undefined;
+  ContactUs: undefined;
+};
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;
 
@@ -45,5 +51,6 @@ declare global {
     interface AuthParamList extends AuthStackParamList {}
     interface MainParamList extends MainTabParamList {}
     interface HomeParamList extends HomeStackParamList {}
+    interface SettingsParamList extends SettingsStackParamList {}
   }
 }

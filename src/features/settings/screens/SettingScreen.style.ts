@@ -147,12 +147,15 @@ const styles = StyleSheet.create({
     color: theme.colors.gray500,
   },
   image: {
-    width: '100%',
-    height: 120,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: theme.colors.gray200,
   },
   placeholderImage: {
-    width: '100%',
-    height: 120,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     backgroundColor: theme.colors.gray200,
   },
   loaderOverlay: {

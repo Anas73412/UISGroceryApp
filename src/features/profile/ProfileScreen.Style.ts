@@ -182,15 +182,41 @@ const styles = StyleSheet.create({
   updateButton: {
     marginTop: theme.spacing[2],
   },
-  documentsEmpty: {
-    paddingVertical: theme.spacing[6],
+  documentsRow: {
+    flexDirection: 'row',
+    gap: theme.spacing[3],
+  },
+  documentCard: {
+    flex: 1,
+    backgroundColor: theme.colors.gray50,
+    borderRadius: theme.borderRadius.base,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    overflow: 'hidden',
+  },
+  documentImageWrap: {
+    width: '100%',
+    aspectRatio: 1.4,
+    backgroundColor: theme.colors.gray200,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  documentsEmptyText: {
+  documentImage: {
+    width: '100%',
+    height: '100%',
+  },
+  documentPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing[3],
+  },
+  documentTitle: {
+    paddingHorizontal: theme.spacing[2],
+    paddingVertical: theme.spacing[3],
     fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.gray500,
-    fontStyle: 'italic',
+    fontWeight: '600',
+    color: theme.colors.gray700,
+    textAlign: 'center',
   },
   versionText: {
     fontSize: theme.typography.fontSize.xs,

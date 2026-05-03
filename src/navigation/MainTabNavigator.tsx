@@ -5,7 +5,7 @@ import { HomeStackNavigator } from './HomeStackNavigator';
 import { CartScreen } from '../features/cart/screens/CartScreen';
 import { ProfileScreen } from '../features/profile/ProfileScreen';
 import { ShareScreen } from '../features/share/screens/ShareScreen';
-import { SettingsScreen } from '../features/settings/screens/SettingsScreen';
+import { SettingsStackNavigator } from './SettingsStackNavigator';
 import { BottomTabBar } from './BottomTabBar';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
@@ -50,7 +50,7 @@ export function MainTabNavigator() {
       />
       <Tab.Screen
         name="SettingsTab"
-        component={SettingsScreen}
+        component={SettingsStackNavigator}
         options={{ title: 'Setting' }}
       />
     </Tab.Navigator>

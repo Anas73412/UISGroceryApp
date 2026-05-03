@@ -5,6 +5,7 @@ export const FAILED = 'Failed';
 export const SUB_PATH='/api/unitedweb';
 export const IMAGE_BASE_URL='https://unitedinternetservice.in/';
 export const RUPEE_SIGN='\u20B9';
+export const UPLOAD_BASE_URL='https://unitedinternetservice.in/api/Fileuplodd';
 
 //API Endpoints
 export const API_ENDPOINTS = {
@@ -18,6 +19,9 @@ export const API_ENDPOINTS = {
   ADD_TO_CART: `${SUB_PATH}/addToCart`,
   UPDATE_CART_QUANTITY: `${SUB_PATH}/updateCartQty`,
   REMOVE_CART_ITEM: `${SUB_PATH}/removeCartItem`,
+  UPLOAD_PROFILE_PICTURE: `${UPLOAD_BASE_URL}/profilepic`,
+  GET_USER_PROFILE: `${SUB_PATH}/userDetails`,
+  UPDATE_PROFILE: `${SUB_PATH}/updateProfile`,
 };
 
 export const { width: SCREEN_WIDTH } = Dimensions.get('window');
