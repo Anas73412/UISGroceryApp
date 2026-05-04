@@ -25,10 +25,12 @@ const HIDE_TAB_BAR_ROUTES = ['ProductScreen', 'ProductDetailScreen'];
 
 export function BottomTabBar({
   state,
-  descriptors,
+  descriptors: _descriptors,
   navigation,
 }: BottomTabBarProps) {
-  const cartCount = cartStore(s => s.items.length);
+  const cartCount = cartStore(s =>
+    s.items.reduce((sum, i) => sum + (i.quantity ?? 0), 0),
+  );
   const route = state.routes[state.index];
   const routeName = getFocusedRouteNameFromRoute({
     params: route.params,
@@ -44,27 +46,27 @@ export function BottomTabBar({
   return (
     <View style={styles.wrapper}>
       <View style={styles.container}>
-        {state.routes.map((route, index) => {
+        {state.routes.map((tabRoute, index) => {
           const isFocused = state.index === index;
           const onPress = () => {
             const event = navigation.emit({
               type: 'tabPress',
-              target: route.key,
+              target: tabRoute.key,
               canPreventDefault: true,
             });
 
             if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
+              navigation.navigate(tabRoute.name);
             }
           };
 
-          const isCenter = route.name === 'CartTab';
-          const icon = TAB_ICONS[route.name] ?? 'circle';
-          const label = TAB_LABELS[route.name] ?? route.name;
+          const isCenter = tabRoute.name === 'CartTab';
+          const icon = TAB_ICONS[tabRoute.name] ?? 'circle';
+          const label = TAB_LABELS[tabRoute.name] ?? tabRoute.name;
 
           if (isCenter) {
             return (
-              <View key={route.key} style={styles.centerSlot}>
+              <View key={tabRoute.key} style={styles.centerSlot}>
                 <View style={styles.badgeContainer}>
                   <Pressable
                     style={[
@@ -92,7 +94,7 @@ export function BottomTabBar({
           }
 
           return (
-            <Pressable key={route.key} style={styles.tab} onPress={onPress}>
+            <Pressable key={tabRoute.key} style={styles.tab} onPress={onPress}>
               <MaterialIcons
                 name={icon as never}
                 size={24}

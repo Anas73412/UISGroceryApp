@@ -22,6 +22,7 @@ export const API_ENDPOINTS = {
   UPLOAD_PROFILE_PICTURE: `${UPLOAD_BASE_URL}/profilepic`,
   GET_USER_PROFILE: `${SUB_PATH}/userDetails`,
   UPDATE_PROFILE: `${SUB_PATH}/updateProfile`,
+  USER_CART_LIST: `${SUB_PATH}/getCartProductList`,
 };
 
 export const { width: SCREEN_WIDTH } = Dimensions.get('window');

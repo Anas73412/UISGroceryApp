@@ -3,6 +3,7 @@ import { ApiResponseModel } from '../../services/types';
 import { sessionStore } from '../../store/sessionStore';
 import { API_ENDPOINTS } from '../../utils/constants';
 import { mapErrorResponse, mapResponse } from '../auth/screens/login/service';
+import { CartProductModel } from '../home/components/ProductCard';
 
 export interface AddToCartResponse {
   cartId?: number;
@@ -56,6 +57,18 @@ export const cartApiService = {
         { cartId, userId },
       );
       return mapResponse<string>(response);
+    } catch (error) {
+      return mapErrorResponse(error);
+    }
+  },
+
+  async getUserCartList(): Promise<ApiResponseModel<CartProductModel[]>> {
+    try {
+      const userId = sessionStore.getState().user?.uid;
+      const response = await apiClient.post<
+        ApiResponseModel<CartProductModel[]>
+      >(API_ENDPOINTS.USER_CART_LIST, { userId });
+      return mapResponse<CartProductModel[]>(response);
     } catch (error) {
       return mapErrorResponse(error);
     }
