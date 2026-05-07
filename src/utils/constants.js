@@ -23,6 +23,7 @@ export const API_ENDPOINTS = {
   GET_USER_PROFILE: `${SUB_PATH}/userDetails`,
   UPDATE_PROFILE: `${SUB_PATH}/updateProfile`,
   USER_CART_LIST: `${SUB_PATH}/getCartProductList`,
+  USER_ADDRESS_LIST: `${SUB_PATH}/getCustomerAddress`,
 };
 
 export const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -36,7 +37,8 @@ export const DATABASE_NAME = 'GroceryAppDB';
 export const DB_TABLES ={
   USER_TABLE: 'users',
   CONFIG_TABLE: 'app_config',
-  CART_TABLE:'cart'
+  CART_TABLE:'cart',
+  ADDRESS_TABLE:'address',
 };
 
 export const CONFIG_KEYS = {
@@ -55,3 +57,10 @@ export const CONFIG_KEYS = {
 };
 
 export const SERVICE_AUTH_CREDENTIALS = 'com.united.uis';
+export const APP_UIS_PREFS = 'com.united.uis.prefs';
+
+export const PREF_KEYS = {
+  SELECTED_ADDRESS_ID: 'selectedAddressId',
+  LATTITUDE: 'lattitude',
+  LONGITUDE: 'longitude',
+}

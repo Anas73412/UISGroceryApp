@@ -6,6 +6,7 @@ import { UserModel } from '../data/models/UserModel';
 import { ConfigModel } from '../data/models/ConfigModel';
 import { CartModel } from '../data/models/CartModel';
 import migrations from '../database/migrations';
+import { AddressModel } from '../data/models/AddressModel';
 
 const adapter = new SQLiteAdapter({
   schema,
@@ -15,5 +16,5 @@ const adapter = new SQLiteAdapter({
 
 export const database = new Database({
   adapter,
-  modelClasses: [UserModel, ConfigModel, CartModel],
+  modelClasses: [UserModel, ConfigModel, CartModel, AddressModel],
 });

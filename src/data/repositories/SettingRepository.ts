@@ -9,6 +9,7 @@ class SettingRepository {
           DB_TABLES.USER_TABLE,
           DB_TABLES.CART_TABLE,
           DB_TABLES.CONFIG_TABLE,
+          DB_TABLES.ADDRESS_TABLE,
         ];
         for (const tableName of tables) {
           await database.get(tableName).query().destroyAllPermanently();

@@ -1,7 +1,6 @@
 export const theme = {
-
-    colors:{
-           // New Design System Colors
+  colors: {
+    // New Design System Colors
     background: '#FFFFFF',
     headerText: '#39afbc',
     textPrimary: '#39afbc',
@@ -54,9 +53,9 @@ export const theme = {
     borderFocus: '#439A86',
     borderError: '#DC2626',
     borderLight: '#EAEAEA',
-    },
+  },
 
-    spacing: {
+  spacing: {
     // Spacing scale (in pixels)
     0: 0,
     1: 4,
@@ -212,6 +211,7 @@ export const theme = {
 
     // Font sizes (based on design specifications)
     fontSize: {
+      xxs: 8,
       xs: 12,
       sm: 14,
       base: 16,

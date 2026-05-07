@@ -45,5 +45,27 @@ export const schema = appSchema({
         { name: 'modifiedAt', type: 'number', isOptional: true },
       ],
     }),
+
+    tableSchema({
+      name: DB_TABLES.ADDRESS_TABLE,
+      columns: [
+        { name: 'uId', type: 'number' },
+        { name: 'addressId', type: 'number' },
+        { name: 'userId', type: 'number' },
+        { name: 'houseNo', type: 'string' },
+        { name: 'buildingName', type: 'string' },
+        { name: 'landmark', type: 'string' },
+        { name: 'addressType', type: 'number' },
+        { name: 'otherAddressType', type: 'string' },
+        { name: 'receiverName', type: 'string', isOptional: true },
+        { name: 'receiverMobile', type: 'string', isOptional: true },
+        { name: 'status', type: 'number' },
+        { name: 'pincode', type: 'string' },
+        { name: 'latitude', type: 'string' },
+        { name: 'longtitude', type: 'string' },
+        { name: 'mapAddress', type: 'string' },
+        { name: 'distance', type: 'number' },
+      ],
+    }),
   ],
 });

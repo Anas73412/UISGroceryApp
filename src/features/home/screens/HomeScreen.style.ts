@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing[1],
   },
   locationText: {
-    fontSize: theme.typography.fontSize.lg,
+    fontSize: theme.typography.fontSize.sm,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.gray800,
   },

@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   View,
   Text,
@@ -17,6 +23,7 @@ import { SliderModel } from '../../../data/models/SliderModel';
 import {
   AUTO_SLIDE_INTERVAL,
   IMAGE_BASE_URL,
+  PREF_KEYS,
   SLIDER_ITEM_WIDTH,
   SUCCESS,
 } from '../../../utils/constants';
@@ -31,6 +38,8 @@ import { cartStore } from '../../../store/cartStore';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../../navigation/types';
 import { ProductScreen } from '../../products/ProductScreen';
+import { addressController } from '../../address/controller';
+import { appPrefs } from '../../../data/repositories/AppPrefRepository';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -56,6 +65,9 @@ export function HomeScreen() {
   const [totalPages, setTotalPages] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [selectedAddress, setSelectedAddress] = useState<string>(
+    'Select Delivery Address',
+  );
 
   const handleQuantityChange = useCallback(
     (product: ProductModel, quantity: number) => {
@@ -98,14 +110,24 @@ export function HomeScreen() {
       show('Loading...');
       const res = await homeController.fetchSliders();
       const sliderData = extractDataArray<SliderModel>(res.data);
-
       const catRes = await homeController.fetchCategories();
       const categories = extractDataArray<CategoryModel>(catRes.data);
       await homeController.fetchUserCarts();
+      const addressList = await addressController.fetchAddressList();
       await loadProducts(1, false);
       setSliders(sliderData);
       setCategories(categories);
       await cartStore.getState().loadFromDB();
+
+      const selectedAddressId = await appPrefs.get('selectedAddressId');
+      if (selectedAddressId >= 0) {
+        const selectedAddress = addressList?.data?.find(
+          add => add.addressId === selectedAddressId,
+        );
+        if (selectedAddress) {
+          setSelectedAddress(selectedAddress.mapAddress);
+        }
+      }
       hide();
     } catch (error) {
       hide();
@@ -169,9 +191,7 @@ export function HomeScreen() {
                 <View>
                   <Text style={styles.deliveryLabel}>DELIVERY TO</Text>
                   <Pressable style={styles.locationRow}>
-                    <Text style={styles.locationText}>
-                      123 Market St, New York
-                    </Text>
+                    <Text style={styles.locationText}>{selectedAddress}</Text>
                     <Text style={styles.locationChevron}>⌄</Text>
                   </Pressable>
                 </View>
