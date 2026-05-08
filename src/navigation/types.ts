@@ -29,12 +29,14 @@ export type HomeStackParamList = {
   SearchScreen: undefined;
   ProductScreen: { categoryId: number; categoryName: string };
   ProductDetailScreen: { product: ProductModel };
+  HomeDeliveryAddress: undefined;
 };
 
 export type SettingsStackParamList = {
   SettingsMain: undefined;
   AboutUs: undefined;
   ContactUs: undefined;
+  DeliveryAddress: undefined;
 };
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;

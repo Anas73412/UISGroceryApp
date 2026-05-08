@@ -40,6 +40,7 @@ import { HomeStackParamList } from '../../../navigation/types';
 import { ProductScreen } from '../../products/ProductScreen';
 import { addressController } from '../../address/controller';
 import { appPrefs } from '../../../data/repositories/AppPrefRepository';
+import { AddressResponseModel } from '../../../data/models/AddressModel';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -51,6 +52,7 @@ export function HomeScreen() {
   const [products, setProducts] = React.useState<ProductModel[]>([]);
   const [sliders, setSliders] = useState<SliderModel[]>([]);
   const [categories, setCategories] = useState<CategoryModel[]>([]);
+  const [addressList, setAddressList] = useState<AddressResponseModel[]>([]);
   const [activeSilderIndex, setActiveSliderIndex] = useState(0);
   const silderRef = useRef<FlatList>(null);
   const autoSlideTimeRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -84,6 +86,24 @@ export function HomeScreen() {
     loadAllData();
   }, []);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      updateAddressUI();
+    }, []),
+  );
+
+  const updateAddressUI = async () => {
+    const selectedAddressId = await appPrefs.get('selectedAddressId');
+    if (selectedAddressId >= 0) {
+      const selectedAddress = addressList?.find(
+        add => add.addressId === selectedAddressId,
+      );
+
+      if (selectedAddress) {
+        setSelectedAddress(selectedAddress.mapAddress);
+      }
+    }
+  };
   useEffect(() => {
     if (sliders.length <= 1) return;
 
@@ -114,20 +134,12 @@ export function HomeScreen() {
       const categories = extractDataArray<CategoryModel>(catRes.data);
       await homeController.fetchUserCarts();
       const addressList = await addressController.fetchAddressList();
+      setAddressList(addressList?.data ?? []);
       await loadProducts(1, false);
       setSliders(sliderData);
       setCategories(categories);
       await cartStore.getState().loadFromDB();
 
-      const selectedAddressId = await appPrefs.get('selectedAddressId');
-      if (selectedAddressId >= 0) {
-        const selectedAddress = addressList?.data?.find(
-          add => add.addressId === selectedAddressId,
-        );
-        if (selectedAddress) {
-          setSelectedAddress(selectedAddress.mapAddress);
-        }
-      }
       hide();
     } catch (error) {
       hide();
@@ -190,7 +202,10 @@ export function HomeScreen() {
               <View style={styles.topRow}>
                 <View>
                   <Text style={styles.deliveryLabel}>DELIVERY TO</Text>
-                  <Pressable style={styles.locationRow}>
+                  <Pressable
+                    style={styles.locationRow}
+                    onPress={() => navigation.navigate('HomeDeliveryAddress')}
+                  >
                     <Text style={styles.locationText}>{selectedAddress}</Text>
                     <Text style={styles.locationChevron}>⌄</Text>
                   </Pressable>

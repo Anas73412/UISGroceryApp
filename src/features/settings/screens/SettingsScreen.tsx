@@ -97,7 +97,7 @@ export function SettingsScreen() {
         navigation.navigate('ContactUs');
         break;
       case 'delivery':
-        showErrorDialog('Coming soon', 'Delivery address will be available soon.');
+        navigation.navigate('DeliveryAddress');
         break;
       case 'requests':
         showErrorDialog(
@@ -129,10 +129,13 @@ export function SettingsScreen() {
   const logout = async () => {
     const isCleared = await SettingController.logout();
     if (isCleared) {
-      navigation.getParent()?.getParent()?.reset({
-        index: 0,
-        routes: [{ name: 'Auth' }],
-      });
+      navigation
+        .getParent()
+        ?.getParent()
+        ?.reset({
+          index: 0,
+          routes: [{ name: 'Auth' }],
+        });
     } else {
       showErrorDialog('Logout Error', 'Failed to logout. Please try again');
     }
