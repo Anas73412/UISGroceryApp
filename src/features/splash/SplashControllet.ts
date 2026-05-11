@@ -34,4 +34,34 @@ export const SplashController = {
       };
     }
   },
+  async loadDeliveryCharges() {
+    try {
+      const res = await splashService.fetchDeliveryCharges();
+      console.log('Delivery Charges API Response:', res);
+      if (res.status === SUCCESS && res.data && Array.isArray(res.data)) {
+        await ConfigRepository.saveAllDeliveryCharges(res.data);
+        return res;
+      } else {
+        return {
+          status: FAILED,
+          message: res.message || 'Failed to load delivery charges',
+        };
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log('Axios error details:', {
+          message: error.message,
+          code: error.code,
+          url: error.config?.url,
+        });
+      } else {
+        console.log('Non-axios error:', error);
+      }
+
+      return {
+        status: FAILED,
+        message: (error as Error).message || 'Failed to load delivery charges',
+      };
+    }
+  },
 };

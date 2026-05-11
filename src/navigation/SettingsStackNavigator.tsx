@@ -5,6 +5,7 @@ import { SettingsScreen } from '../features/settings/screens/SettingsScreen';
 import { AboutUsScreen } from '../features/settings/screens/AboutUsScreen';
 import { ContactUsScreen } from '../features/settings/screens/ContactUsScreen';
 import { AddressScreen } from '../features/address/AddressScreen';
+import { AddAddressScreen } from '../features/address/AddAddressScreen';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
@@ -15,6 +16,7 @@ export function SettingsStackNavigator() {
       <Stack.Screen name="AboutUs" component={AboutUsScreen} />
       <Stack.Screen name="ContactUs" component={ContactUsScreen} />
       <Stack.Screen name="DeliveryAddress" component={AddressScreen} />
+      <Stack.Screen name="AddAddress" component={AddAddressScreen} />
     </Stack.Navigator>
   );
 }

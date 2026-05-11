@@ -7,6 +7,7 @@ import { ProductScreen } from '../features/products/ProductScreen';
 import { ProductDetailScreen } from '../features/productdetails/ProductDetailScreen';
 import { SearchScreen } from '../features/search/SearchScreen';
 import { AddressScreen } from '../features/address/AddressScreen';
+import { AddAddressScreen } from '../features/address/AddAddressScreen';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -18,6 +19,7 @@ export function HomeStackNavigator() {
       <Stack.Screen name="SearchScreen" component={SearchScreen} />
       <Stack.Screen name="ProductScreen" component={ProductScreen} />
       <Stack.Screen name="HomeDeliveryAddress" component={AddressScreen} />
+      <Stack.Screen name="AddAddress" component={AddAddressScreen} />
       <Stack.Screen
         name="ProductDetailScreen"
         component={ProductDetailScreen}

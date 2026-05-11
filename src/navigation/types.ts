@@ -2,9 +2,11 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { ProductModel } from '../data/models/ProductModel';
+import type { AddressResponseModel } from '../data/models/AddressModel';
 
 export type RootStackParamList = {
   Splash: undefined;
+  Permissions: undefined;
   Auth: undefined;
   Main: undefined;
 };
@@ -23,6 +25,16 @@ export type AuthStackParamList = {
   ForgotPassword: undefined;
 };
 
+/** Params for `AddAddress` (used from Home stack and Settings stack). */
+export type AddAddressRouteParams = {
+  addressId?: number;
+  address?: AddressResponseModel;
+  /** With `longitude`, skips GPS and uses this pin for the form. */
+  latitude?: number;
+  longitude?: number;
+  mapAddress?: string;
+};
+
 export type HomeStackParamList = {
   HomeScreen: undefined;
   CategoryScreen: undefined;
@@ -30,6 +42,7 @@ export type HomeStackParamList = {
   ProductScreen: { categoryId: number; categoryName: string };
   ProductDetailScreen: { product: ProductModel };
   HomeDeliveryAddress: undefined;
+  AddAddress: AddAddressRouteParams;
 };
 
 export type SettingsStackParamList = {
@@ -37,6 +50,7 @@ export type SettingsStackParamList = {
   AboutUs: undefined;
   ContactUs: undefined;
   DeliveryAddress: undefined;
+  AddAddress: AddAddressRouteParams;
 };
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;

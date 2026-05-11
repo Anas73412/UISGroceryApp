@@ -84,7 +84,6 @@ export function SettingsScreen() {
       : rawImage
       ? `${IMAGE_BASE_URL}${rawImage}`
       : '';
-    console.log('ImageURIL', uri);
     setImageUri(uri);
   });
 

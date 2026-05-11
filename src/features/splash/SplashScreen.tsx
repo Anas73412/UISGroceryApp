@@ -8,6 +8,7 @@ import { SplashController } from './SplashControllet';
 import AuthRepository from '../../data/repositories/AuthRepository';
 import { sessionStore } from '../../store/sessionStore';
 import { SUCCESS } from '../../utils/constants';
+import { appPrefs } from '../../data/repositories/AppPrefRepository';
 const appIcon = require('../../assets/images/app_icon.png');
 
 type SplashScreenProps = {
@@ -22,14 +23,22 @@ export function SplashScreen({ navigation }: SplashScreenProps) {
   const initializeStartApp = async () => {
     try {
       const res = await SplashController.loadAppConfig();
-      if (res.status === SUCCESS) {
-        const isLoggedIn = await AuthRepository.isLoggedIn();
-        if (isLoggedIn) {
-          await sessionStore.getState().loadSession();
-          navigation.replace('Main');
-        } else {
-          navigation.replace('Auth');
-        }
+      const resDelivery = await SplashController.loadDeliveryCharges();
+      if (res.status !== SUCCESS) {
+        navigation.replace('Auth');
+        return;
+      }
+
+      const permissionsRequested = await appPrefs.get('permissionsRequested');
+      if (!permissionsRequested) {
+        navigation.replace('Permissions');
+        return;
+      }
+
+      const isLoggedIn = await AuthRepository.isLoggedIn();
+      if (isLoggedIn) {
+        await sessionStore.getState().loadSession();
+        navigation.replace('Main');
       } else {
         navigation.replace('Auth');
       }

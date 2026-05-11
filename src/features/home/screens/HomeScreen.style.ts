@@ -24,6 +24,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: theme.spacing[4],
+    gap: theme.spacing[3],
+  },
+  addressSection: {
+    flex: 1,
+    minWidth: 0,
   },
   deliveryLabel: {
     fontSize: theme.typography.fontSize.xs,
@@ -35,15 +40,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: theme.spacing[1],
   },
+  locationIcon: {
+    marginRight: theme.spacing[2],
+  },
   locationText: {
+    flex: 1,
+    minWidth: 0,
     fontSize: theme.typography.fontSize.sm,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.gray800,
   },
   locationChevron: {
-    marginLeft: theme.spacing[1],
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.gray400,
+    marginLeft: theme.spacing[2],
   },
   bellButton: {
     width: 36,
@@ -58,8 +66,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
-  bellText: {
-    fontSize: theme.typography.fontSize.lg,
+  bellIcon: {
+    color: theme.colors.gray800,
   },
   searchContainer: {
     flexDirection: 'row',

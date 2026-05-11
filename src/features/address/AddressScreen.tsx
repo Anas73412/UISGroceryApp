@@ -1,7 +1,13 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useCallback, useState } from 'react';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import {
+  FlatList,
+  Pressable,
+  Text,
+  View,
+  type GestureResponderEvent,
+} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import AddressRepository from '../../data/repositories/AddressRepository';
 import {
@@ -10,23 +16,28 @@ import {
 } from '../../data/models/AddressModel';
 import { useConfirmationDialog } from '../../components/context/ConfirmationDialogContext';
 import { useLoading } from '../../components/context/LoadingContext';
+import { useMessageDialog } from '../../components/context/MessageDialogContext';
 import { appPrefs } from '../../data/repositories/AppPrefRepository';
 import { sessionStore } from '../../store/sessionStore';
-import { PREF_KEYS } from '../../utils/constants';
 import { theme } from '../../theme';
-import type { SettingsStackParamList } from '../../navigation/types';
+import { SUCCESS } from '../../utils/constants';
+import type {
+  HomeStackParamList,
+  SettingsStackParamList,
+} from '../../navigation/types';
 import { addressController } from './controller';
 import styles from './AddressScreen.Style';
 
 type AddressNavigationProp = NativeStackNavigationProp<
-  SettingsStackParamList,
-  'DeliveryAddress'
+  HomeStackParamList & SettingsStackParamList,
+  'HomeDeliveryAddress' | 'DeliveryAddress' | 'AddAddress'
 >;
 
 export function AddressScreen() {
   const navigation = useNavigation<AddressNavigationProp>();
   const { show, hide } = useLoading();
   const { showConfirm } = useConfirmationDialog();
+  const { showErrorDialog, showSuccessDialog } = useMessageDialog();
   const [addressList, setAddressList] = useState<AddressResponseModel[]>([]);
   const [defaultAddressId, setDefaultAddressId] = useState<number>(0);
 
@@ -117,6 +128,73 @@ export function AddressScreen() {
     });
   };
 
+  const handleEditPress = (
+    event: GestureResponderEvent,
+    address: AddressResponseModel,
+  ) => {
+    event.stopPropagation();
+
+    const latitude = Number(address.latitude);
+    const longitude = Number(address.longtitude);
+
+    navigation.navigate('AddAddress', {
+      addressId: address.addressId,
+      address,
+      ...(Number.isFinite(latitude) ? { latitude } : {}),
+      ...(Number.isFinite(longitude) ? { longitude } : {}),
+      ...(address.mapAddress ? { mapAddress: address.mapAddress } : {}),
+    });
+  };
+
+  const handleDeletePress = (
+    event: GestureResponderEvent,
+    address: AddressResponseModel,
+  ) => {
+    event.stopPropagation();
+
+    showConfirm({
+      title: 'Delete address',
+      message: 'Are you sure you want to delete this delivery address?',
+      confirmLabel: 'Delete',
+      cancelLabel: 'Cancel',
+      variant: 'danger',
+      icon: 'trash-alt',
+      onConfirm: async () => {
+        show('Deleting address...');
+        try {
+          const res = await addressController.deleteAddressOnServer(
+            address.addressId,
+          );
+
+          if (res.status !== SUCCESS) {
+            showErrorDialog(
+              'Delete failed',
+              res.message || 'Failed to delete address',
+            );
+            return;
+          }
+
+          setAddressList(prev =>
+            prev.filter(item => item.addressId !== address.addressId),
+          );
+
+          if (defaultAddressId === address.addressId) {
+            setDefaultAddressId(0);
+            await appPrefs.setMany({
+              selectedAddressId: 0,
+              lattitude: null,
+              longitude: null,
+            });
+          }
+
+          showSuccessDialog('Success', 'Address deleted successfully');
+        } finally {
+          hide();
+        }
+      },
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -135,7 +213,20 @@ export function AddressScreen() {
         <View style={styles.headerRight} />
       </View>
       <View style={styles.addAddressContainer}>
-        <Pressable style={styles.addAddressBtn}>
+        <Pressable
+          style={styles.addAddressBtn}
+          onPress={() => {
+            navigation.navigate(
+              'AddAddress',
+              {},
+              //    {
+              //   latitude: 26.810153,
+              //   longitude: 79.510737,
+              //   mapAddress: 'Optional label from your map picker',
+              // }
+            );
+          }}
+        >
           <MaterialIcons
             name="add"
             size={22}
@@ -163,11 +254,39 @@ export function AddressScreen() {
                     {buildAddressTypeLabel(item)}
                   </Text>
                 </View>
-                {isSelected ? (
-                  <View style={styles.defaultBadge}>
-                    <Text style={styles.defaultBadgeText}>DEFAULT</Text>
+
+                <View style={styles.cardRightRow}>
+                  {isSelected ? (
+                    <View style={styles.defaultBadge}>
+                      <Text style={styles.defaultBadgeText}>DEFAULT</Text>
+                    </View>
+                  ) : null}
+
+                  <View style={styles.cardActions}>
+                    <Pressable
+                      style={styles.cardIconButton}
+                      hitSlop={8}
+                      onPress={event => handleEditPress(event, item)}
+                    >
+                      <MaterialIcons
+                        name="edit"
+                        size={18}
+                        color={theme.colors.primary}
+                      />
+                    </Pressable>
+                    <Pressable
+                      style={[styles.cardIconButton, styles.deleteIconButton]}
+                      hitSlop={8}
+                      onPress={event => handleDeletePress(event, item)}
+                    >
+                      <MaterialIcons
+                        name="delete-outline"
+                        size={18}
+                        color={theme.colors.error}
+                      />
+                    </Pressable>
                   </View>
-                ) : null}
+                </View>
               </View>
 
               {item.addressType === 3 && (

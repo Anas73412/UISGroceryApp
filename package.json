@@ -21,6 +21,8 @@
     "nativewind": "^4.2.2",
     "react": "19.2.3",
     "react-native": "0.84.1",
+    "react-native-geocoding": "^0.5.0",
+    "react-native-geolocation-service": "^5.3.1",
     "react-native-image-picker": "^8.2.1",
     "react-native-keychain": "^10.0.0",
     "react-native-loading-spinner-overlay": "^3.0.1",

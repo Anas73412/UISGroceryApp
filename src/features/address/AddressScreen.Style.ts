@@ -59,6 +59,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: theme.spacing[2],
   },
+  cardRightRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing[2],
+  },
   chip: {
     backgroundColor: theme.colors.gray100,
     borderRadius: theme.borderRadius.full,
@@ -80,6 +85,25 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.white,
     fontWeight: '600',
+  },
+  cardActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing[2],
+  },
+  cardIconButton: {
+    width: 34,
+    height: 34,
+    borderRadius: theme.borderRadius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.gray50,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+  },
+  deleteIconButton: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
   },
   receiverName: {
     fontSize: theme.typography.fontSize.base,

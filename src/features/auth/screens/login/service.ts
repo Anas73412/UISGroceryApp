@@ -23,7 +23,6 @@ export const loginService = {
         API_ENDPOINTS.LOGIN,
         { mobile, password },
       );
-      console.log('LoginDeta', response);
       return mapResponse<UserResponseModel>(response);
     } catch (error: any) {
       return mapErrorResponse(error);

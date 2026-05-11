@@ -24,6 +24,10 @@ export const API_ENDPOINTS = {
   UPDATE_PROFILE: `${SUB_PATH}/updateProfile`,
   USER_CART_LIST: `${SUB_PATH}/getCartProductList`,
   USER_ADDRESS_LIST: `${SUB_PATH}/getCustomerAddress`,
+  ADD_CUSTOMER_ADDRESS: `${SUB_PATH}/addCustomerAddress`,
+  UPDATE_CUSTOMER_ADDRESS: `${SUB_PATH}/updateCustomerAddress`,
+  GET_DELIVERY_CHARGE: `${SUB_PATH}/getDeliveryCharges`,
+  DELETE_CUSTOMER_ADDRESS: `${SUB_PATH}/deleteCustomerAddress`,
 };
 
 export const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -31,7 +35,7 @@ export const SLIDER_PEEK = 24; // How much of next slide shows
 export const SLIDER_ITEM_WIDTH = SCREEN_WIDTH - SLIDER_PEEK;
 export const SLIDER_HEIGHT = 160;
 export const AUTO_SLIDE_INTERVAL = 4000; 
-
+export const EARTH_RADIUS_KM = 6371;
 export const DATABASE_NAME = 'GroceryAppDB';
 
 export const DB_TABLES ={
@@ -39,6 +43,7 @@ export const DB_TABLES ={
   CONFIG_TABLE: 'app_config',
   CART_TABLE:'cart',
   ADDRESS_TABLE:'address',
+  DELIVERY_CHARGE_TABLE:'delivery_charge',
 };
 
 export const CONFIG_KEYS = {

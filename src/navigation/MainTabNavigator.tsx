@@ -17,18 +17,13 @@ const renderTabBar = (props: BottomTabBarProps) => <BottomTabBar {...props} />;
 const HIDE_TAB_BAR_ROUTES = ['ProductScreen', 'ProductDetailScreen'];
 export function MainTabNavigator() {
   return (
-    <Tab.Navigator
-      screenOptions={{ headerShown: false }}
-      tabBar={renderTabBar}
-    >
+    <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={renderTabBar}>
       <Tab.Screen
         name="HomeTab"
         component={HomeStackNavigator}
         options={({ route }) => {
           const routeName = getFocusedRouteNameFromRoute(route) ?? 'Home';
           const shouldHideBottomBar = HIDE_TAB_BAR_ROUTES.includes(routeName);
-          console.log('Route', routeName);
-          console.log('Route1', shouldHideBottomBar);
           return {
             title: 'Home',
             tabBarStyle: { display: shouldHideBottomBar ? 'none' : 'flex' },

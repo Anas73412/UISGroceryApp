@@ -8,13 +8,13 @@ import React, {
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   Pressable,
   SafeAreaView,
   TextInput,
   ActivityIndicator,
 } from 'react-native';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { ProductCard } from '../components/ProductCard';
 import { CategoryCard } from '../components/CategoryCard';
 import { homeController } from '../controller';
@@ -23,9 +23,7 @@ import { SliderModel } from '../../../data/models/SliderModel';
 import {
   AUTO_SLIDE_INTERVAL,
   IMAGE_BASE_URL,
-  PREF_KEYS,
   SLIDER_ITEM_WIDTH,
-  SUCCESS,
 } from '../../../utils/constants';
 import { extractDataArray } from '../../../utils/utils';
 import { SliderBanner } from '../../../components/ui/Slider/SliderBanner';
@@ -37,10 +35,10 @@ import { CartModel } from '../../../data/models/CartModel';
 import { cartStore } from '../../../store/cartStore';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../../navigation/types';
-import { ProductScreen } from '../../products/ProductScreen';
 import { addressController } from '../../address/controller';
 import { appPrefs } from '../../../data/repositories/AppPrefRepository';
 import { AddressResponseModel } from '../../../data/models/AddressModel';
+import { theme } from '../../../theme';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -89,20 +87,24 @@ export function HomeScreen() {
   useFocusEffect(
     React.useCallback(() => {
       updateAddressUI();
-    }, []),
+    }, [addressList]),
   );
 
   const updateAddressUI = async () => {
     const selectedAddressId = await appPrefs.get('selectedAddressId');
+    console.log('Selected Address ID from prefs:', selectedAddressId);
     if (selectedAddressId >= 0) {
-      const selectedAddress = addressList?.find(
+      const selectedAddressItem = addressList?.find(
         add => add.addressId === selectedAddressId,
       );
 
-      if (selectedAddress) {
-        setSelectedAddress(selectedAddress.mapAddress);
+      if (selectedAddressItem) {
+        setSelectedAddress(selectedAddressItem.mapAddress);
+        return;
       }
     }
+
+    setSelectedAddress('Select Delivery Address');
   };
   useEffect(() => {
     if (sliders.length <= 1) return;
@@ -200,18 +202,39 @@ export function HomeScreen() {
           ListHeaderComponent={
             <>
               <View style={styles.topRow}>
-                <View>
+                <Pressable
+                  style={styles.addressSection}
+                  onPress={() => navigation.navigate('HomeDeliveryAddress')}
+                >
                   <Text style={styles.deliveryLabel}>DELIVERY TO</Text>
-                  <Pressable
-                    style={styles.locationRow}
-                    onPress={() => navigation.navigate('HomeDeliveryAddress')}
-                  >
-                    <Text style={styles.locationText}>{selectedAddress}</Text>
-                    <Text style={styles.locationChevron}>⌄</Text>
-                  </Pressable>
-                </View>
+                  <View style={styles.locationRow}>
+                    <MaterialIcons
+                      name="location-on"
+                      size={18}
+                      color={theme.colors.primary}
+                      style={styles.locationIcon}
+                    />
+                    <Text
+                      style={styles.locationText}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {selectedAddress}
+                    </Text>
+                    <MaterialIcons
+                      name="keyboard-arrow-down"
+                      size={18}
+                      color={theme.colors.gray400}
+                      style={styles.locationChevron}
+                    />
+                  </View>
+                </Pressable>
                 <Pressable style={styles.bellButton}>
-                  <Text style={styles.bellText}>🔔</Text>
+                  <MaterialIcons
+                    name="notifications-none"
+                    size={22}
+                    color={theme.colors.gray800}
+                  />
                 </Pressable>
               </View>
 

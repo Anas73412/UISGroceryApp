@@ -4,6 +4,7 @@ import type { RootStackParamList } from './types';
 import { AuthNavigator } from './AuthNavigator';
 import { MainTabNavigator } from './MainTabNavigator';
 import { SplashScreen } from '../features/splash/SplashScreen';
+import { PermissionsScreen } from '../features/permissions/PermissionsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -14,6 +15,7 @@ export function RootNavigator() {
       initialRouteName="Splash"
     >
       <Stack.Screen name="Splash" component={SplashScreen} />
+      <Stack.Screen name="Permissions" component={PermissionsScreen} />
       <Stack.Screen name="Auth" component={AuthNavigator} />
       <Stack.Screen name="Main" component={MainTabNavigator} />
     </Stack.Navigator>

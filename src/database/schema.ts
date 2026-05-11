@@ -67,5 +67,16 @@ export const schema = appSchema({
         { name: 'distance', type: 'number' },
       ],
     }),
+
+    tableSchema({
+      name: DB_TABLES.DELIVERY_CHARGE_TABLE,
+      columns: [
+        { name: 'uId', type: 'number' },
+        { name: 'rateId', type: 'number' },
+        { name: 'amount', type: 'number' },
+        { name: 'distance', type: 'string' },
+        { name: 'deliveryTime', type: 'string' },
+      ],
+    }),
   ],
 });
