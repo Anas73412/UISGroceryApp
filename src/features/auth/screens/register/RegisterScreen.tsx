@@ -11,7 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { styles } from './RegisterScreen.styles';
-import { Input, Button, Link } from '../../../../components/ui';
+import { AppHeader, Input, Button, Link } from '../../../../components/ui';
 import { AuthStackParamList } from '../../../../navigation/types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../../../theme';
@@ -47,24 +47,7 @@ export function RegisterScreen({ navigation }: RegisterScreenProps) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header: back + title */}
-        <View style={styles.headerBar}>
-          <Pressable
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-            hitSlop={12}
-          >
-            <Text style={styles.backArrow}>
-              <MaterialIcons
-                name="arrow-back"
-                size={22}
-                color={theme.colors.primary}
-              />
-            </Text>
-          </Pressable>
-          <Text style={styles.headerTitle}>Register</Text>
-          <View style={styles.headerSpacer} />
-        </View>
+        <AppHeader title="Register" showCartIcon={false} />
 
         <View style={styles.header}>
           <View style={styles.logoWrap}>

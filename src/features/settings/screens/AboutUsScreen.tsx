@@ -1,34 +1,14 @@
 import React from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { View, Text, ScrollView } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { AppHeader } from '../../../components/ui';
 import { theme } from '../../../theme';
 import { staticScreenStyles as s } from '../settingsStaticScreens.styles';
-import type { SettingsStackParamList } from '../../../navigation/types';
-
-type Nav = NativeStackNavigationProp<SettingsStackParamList, 'AboutUs'>;
 
 export function AboutUsScreen() {
-  const navigation = useNavigation<Nav>();
-
   return (
     <View style={s.container}>
-      <View style={s.header}>
-        <Pressable
-          onPress={() => navigation.goBack()}
-          style={s.backButton}
-          hitSlop={12}
-        >
-          <MaterialIcons
-            name="arrow-back"
-            size={24}
-            color={theme.colors.primary}
-          />
-        </Pressable>
-        <Text style={s.headerTitle}>About us</Text>
-        <View style={s.headerRight} />
-      </View>
+      <AppHeader title="About us" showCartIcon={false} />
 
       <ScrollView
         style={s.scroll}

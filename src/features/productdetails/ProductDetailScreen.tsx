@@ -14,6 +14,7 @@ import { theme } from '../../theme';
 import { IMAGE_BASE_URL, RUPEE_SIGN } from '../../utils/constants';
 import { QuantitySelector } from '../../components/ui/QuantitySelector';
 import { ProductCard } from '../home/components/ProductCard';
+import { AppHeader } from '../../components/ui';
 import Toast from 'react-native-toast-message';
 import styles from './ProductDetailScreen.Style';
 import { HomeStackParamList } from '../../navigation/types';
@@ -145,24 +146,7 @@ export function ProductDetailScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-          hitSlop={12}
-        >
-          <MaterialIcons
-            name="arrow-back"
-            size={24}
-            color={theme.colors.primary}
-          />
-        </Pressable>
-        <Text style={styles.headerTitle} numberOfLines={1}>
-          {product.productName ?? 'Product'}
-        </Text>
-        <View style={styles.headerRight} />
-      </View>
+      <AppHeader title={product.productName ?? 'Product'} />
 
       <ScrollView
         style={{ flex: 1 }}

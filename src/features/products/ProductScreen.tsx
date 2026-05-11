@@ -9,10 +9,10 @@ import {
 import styles from './ProductScreen.Style';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../navigation/types';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { theme } from '../../theme';
 import { useLoading } from '../../components/context/LoadingContext';
+import { AppHeader } from '../../components/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ProductModel } from '../../data/models/ProductModel';
 import { productController } from './controller';
@@ -97,21 +97,7 @@ export function ProductScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-          hitSlop={12}
-        >
-          <MaterialIcons
-            name="arrow-back"
-            size={24}
-            color={theme.colors.primary}
-          />
-        </Pressable>
-        <Text style={styles.headerTitle}>{categoryName}</Text>
-        <View style={styles.headerRight}></View>
-      </View>
+      <AppHeader title={categoryName} />
       {/** Search Product */}
 
       <View style={styles.searchContainer}>

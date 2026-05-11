@@ -19,7 +19,7 @@ import type {
 } from '../../navigation/types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../theme';
-import { Input } from '../../components/ui';
+import { AppHeader, Input } from '../../components/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import {
@@ -335,27 +335,10 @@ export function AddAddressScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header: back + title */}
-        <View style={styles.headerBar}>
-          <Pressable
-            style={styles.backButton}
-            onPress={() => {
-              navigation.goBack();
-            }}
-          >
-            <Text style={styles.backArrow}>
-              <MaterialIcons
-                name="arrow-back"
-                size={22}
-                color={theme.colors.primary}
-              />
-            </Text>
-          </Pressable>
-          <Text style={styles.headerTitle}>
-            {isEditing ? 'Edit Address' : 'Add New Address'}
-          </Text>
-          <View style={styles.headerSpacer} />
-        </View>
+        <AppHeader
+          title={isEditing ? 'Edit Address' : 'Add New Address'}
+          showCartIcon={false}
+        />
 
         <View style={styles.container}>
           <Text style={styles.welcomeTitle}>DELIVARY DETAILS</Text>

@@ -11,7 +11,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../theme';
 import { sessionStore } from '../../store/sessionStore';
-import { cartStore } from '../../store/cartStore';
+import { AppHeader } from '../../components/ui';
 import { profileController } from './controller';
 import { Button, Input } from '../../components/ui';
 import styles from './ProfileScreen.Style';
@@ -23,7 +23,6 @@ import { useLoading } from '../../components/context/LoadingContext';
 
 export function ProfileScreen() {
   const navigation = useNavigation();
-  const cartCount = cartStore(s => s.items.length);
   const [user, setUser] = useState<UserResponseModel | null>(null);
   const [name, setName] = useState(user?.name ?? '');
   const [email, setEmail] = useState('');
@@ -88,10 +87,6 @@ export function ProfileScreen() {
     hide();
   };
 
-  const handleCartPress = () => {
-    navigation.navigate('CartTab' as never);
-  };
-
   const handleImageUpload = async (asset: {
     uri: string;
     type?: string;
@@ -125,42 +120,10 @@ export function ProfileScreen() {
   };
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Pressable
-            onPress={() => navigation.navigate('HomeTab' as never)}
-            style={styles.backButton}
-            hitSlop={12}
-          >
-            <MaterialIcons
-              name="arrow-back"
-              size={24}
-              color={theme.colors.primary}
-            />
-          </Pressable>
-          <Text style={styles.headerTitle}>Profile</Text>
-        </View>
-        <View style={styles.headerRight}>
-          <Pressable style={styles.newsBadge}>
-            <Text style={styles.newsBadgeText}>NEWS</Text>
-          </Pressable>
-          <Pressable style={styles.cartButton} onPress={handleCartPress}>
-            <MaterialIcons
-              name="shopping-cart"
-              size={24}
-              color={theme.colors.primary}
-            />
-            {cartCount > 0 && (
-              <View style={styles.cartBadge}>
-                <Text style={styles.cartBadgeText}>
-                  {cartCount > 99 ? '99+' : cartCount}
-                </Text>
-              </View>
-            )}
-          </Pressable>
-        </View>
-      </View>
+      <AppHeader
+        title="Profile"
+        onBackPress={() => navigation.navigate('HomeTab' as never)}
+      />
 
       <ScrollView
         style={{ flex: 1 }}

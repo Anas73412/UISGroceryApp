@@ -21,7 +21,15 @@ const TAB_LABELS: Record<string, string> = {
   ProfileTab: 'Profile',
   SettingsTab: 'Setting',
 };
-const HIDE_TAB_BAR_ROUTES = ['ProductScreen', 'ProductDetailScreen'];
+const HIDE_TAB_BAR_ROUTES = [
+  'CartTab',
+  'ProductScreen',
+  'ProductDetailScreen',
+  'HomeDeliveryAddress',
+  'DeliveryAddress',
+  'AddAddress',
+  'ContactUs',
+];
 
 export function BottomTabBar({
   state,
@@ -36,10 +44,10 @@ export function BottomTabBar({
     params: route.params,
     name: route.name,
   });
-  const currentRoute = route.state?.routes?.[route.state?.index ?? 1];
-  const focusedRouteName = currentRoute?.name ?? routeName;
+  const currentRoute = route.state?.routes?.[route.state?.index ?? 0];
+  const focusedRouteName = currentRoute?.name ?? routeName ?? route.name;
 
-  const shouldHide = HIDE_TAB_BAR_ROUTES.includes(focusedRouteName ?? 'Home');
+  const shouldHide = HIDE_TAB_BAR_ROUTES.includes(focusedRouteName);
 
   if (shouldHide) return null;
 

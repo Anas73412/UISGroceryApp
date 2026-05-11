@@ -15,6 +15,7 @@ import styles from './CartScreen.Style';
 import { theme } from '../../theme';
 import { IMAGE_BASE_URL, RUPEE_SIGN, SUCCESS } from '../../utils/constants';
 import { QuantitySelector } from '../../components/ui/QuantitySelector';
+import { AppHeader } from '../../components/ui';
 import { cartStore } from '../../store/cartStore';
 import { CartResponseModel } from '../../data/models/CartModel';
 import { ProductModel } from '../../data/models/ProductModel';
@@ -25,6 +26,8 @@ import Toast from 'react-native-toast-message';
 import type { MainTabParamList } from '../../navigation/types';
 import { cartController } from './controller';
 import { CartProductModel } from '../home/components/ProductCard';
+import { AddressResponseModel } from '../../data/models/AddressModel';
+import { appPrefs } from '../../data/repositories/AppPrefRepository';
 
 type Line = CartResponseModel & { product?: ProductModel };
 
@@ -92,9 +95,7 @@ async function fetchCartLinesFromApi(): Promise<Line[]> {
     return [];
   }
   const rows = normalizeCartProductRows(res.data);
-  return rows
-    .filter(r => (r.productId ?? 0) > 0)
-    .map(apiRowToLine);
+  return rows.filter(r => (r.productId ?? 0) > 0).map(apiRowToLine);
 }
 
 export function CartScreen() {
@@ -102,12 +103,35 @@ export function CartScreen() {
   const { showErrorDialog } = useMessageDialog();
   const [cartLines, setCartLines] = useState<Line[]>([]);
   const [listLoading, setListLoading] = useState(true);
-
+  const [addressList, setAddressList] = useState<AddressResponseModel[]>([]);
+  const [selectedAddress, setSelectedAddress] =
+    useState<string>('No address set yet');
   const refetchCartFromApi = useCallback(async () => {
     const next = await fetchCartLinesFromApi();
     setCartLines(next);
   }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      updateAddressUI();
+    }, [addressList]),
+  );
 
+  const updateAddressUI = async () => {
+    const selectedAddressId = await appPrefs.get('selectedAddressId');
+    console.log('Selected Address ID from prefs:', selectedAddressId);
+    if (selectedAddressId >= 0) {
+      const selectedAddressItem = addressList?.find(
+        add => add.addressId === selectedAddressId,
+      );
+
+      if (selectedAddressItem) {
+        setSelectedAddress(selectedAddressItem.mapAddress);
+        return;
+      }
+    }
+
+    setSelectedAddress('No address set yet');
+  };
   const totalQty = useMemo(
     () => cartLines.reduce((s, i) => s + (i.quantity ?? 0), 0),
     [cartLines],
@@ -134,6 +158,8 @@ export function CartScreen() {
             setCartLines(next);
             await cartStore.getState().loadFromDB();
           }
+          const addressListFromDB = await cartController.getAddressListFromDB();
+          setAddressList(addressListFromDB);
         } finally {
           if (!cancelled) setListLoading(false);
         }
@@ -271,46 +297,27 @@ export function CartScreen() {
       </View>
       <View style={styles.addressTexts}>
         <Text style={styles.addressTitle}>Delivery Address</Text>
-        <Text style={styles.addressSub}>No address set yet</Text>
+        <Text style={styles.addressSub}>{selectedAddress}</Text>
       </View>
-      <Pressable hitSlop={8}>
-        <Text style={styles.addAddress}>Add Address</Text>
+      <Pressable
+        hitSlop={8}
+        onPress={() =>
+          navigation.navigate('HomeTab', {
+            screen: 'HomeDeliveryAddress',
+          })
+        }
+      >
+        <Text style={styles.addAddress}>Select Address</Text>
       </Pressable>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => navigation.navigate('HomeTab')}
-          style={styles.backButton}
-          hitSlop={12}
-        >
-          <MaterialIcons
-            name="chevron-left"
-            size={28}
-            color={theme.colors.gray800}
-          />
-        </Pressable>
-        <Text style={styles.headerTitle} numberOfLines={1}>
-          Your Shopping Cart
-        </Text>
-        <Pressable style={styles.cartIconWrap} hitSlop={12}>
-          <MaterialIcons
-            name="shopping-cart"
-            size={24}
-            color={theme.colors.gray800}
-          />
-          {totalQty > 0 && (
-            <View style={styles.headerCartBadge}>
-              <Text style={styles.headerCartBadgeText}>
-                {totalQty > 99 ? '99+' : totalQty}
-              </Text>
-            </View>
-          )}
-        </Pressable>
-      </View>
+      <AppHeader
+        title="Your Shopping Cart"
+        onBackPress={() => navigation.navigate('HomeTab')}
+      />
 
       <FlatList
         data={cartLines}

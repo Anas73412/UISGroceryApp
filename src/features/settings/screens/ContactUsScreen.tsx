@@ -8,12 +8,9 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../../theme';
-import { Input, Button } from '../../../components/ui';
-import type { SettingsStackParamList } from '../../../navigation/types';
+import { AppHeader, Input, Button } from '../../../components/ui';
 import Toast from 'react-native-toast-message';
 
 const SUPPORT_PHONE = '1-800-FRESH';
@@ -22,10 +19,7 @@ const SUPPORT_EMAIL = 'help@freshcart.com';
 const OFFICE_ADDRESS_LINE_1 = '123 Fresh Way, Suite 400';
 const OFFICE_ADDRESS_LINE_2 = 'New York, NY 10001';
 
-type Nav = NativeStackNavigationProp<SettingsStackParamList, 'ContactUs'>;
-
 export function ContactUsScreen() {
-  const navigation = useNavigation<Nav>();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -69,15 +63,7 @@ export function ContactUsScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()} style={styles.iconButton} hitSlop={12}>
-          <MaterialIcons name="menu" size={24} color={theme.colors.primary} />
-        </Pressable>
-        <Text style={styles.headerTitle}>FreshCart</Text>
-        <View style={styles.avatarWrap}>
-          <MaterialIcons name="person" size={18} color={theme.colors.gray700} />
-        </View>
-      </View>
+      <AppHeader title="Contact Us" showCartIcon={false} />
 
       <ScrollView
         style={styles.scroll}

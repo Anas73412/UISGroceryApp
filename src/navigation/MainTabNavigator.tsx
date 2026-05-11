@@ -14,7 +14,11 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 
 const renderTabBar = (props: BottomTabBarProps) => <BottomTabBar {...props} />;
 
-const HIDE_TAB_BAR_ROUTES = ['ProductScreen', 'ProductDetailScreen'];
+const HIDE_TAB_BAR_ROUTES = [
+  'ProductScreen',
+  'ProductDetailScreen',
+  'HomeDeliveryAddress',
+];
 export function MainTabNavigator() {
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={renderTabBar}>
@@ -49,7 +53,14 @@ export function MainTabNavigator() {
       <Tab.Screen
         name="SettingsTab"
         component={SettingsStackNavigator}
-        options={{ title: 'Setting' }}
+        options={({ route }) => {
+          const routeName = getFocusedRouteNameFromRoute(route) ?? 'SettingsMain';
+          const shouldHideBottomBar = routeName === 'DeliveryAddress';
+          return {
+            title: 'Setting',
+            tabBarStyle: { display: shouldHideBottomBar ? 'none' : 'flex' },
+          };
+        }}
       />
     </Tab.Navigator>
   );

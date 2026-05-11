@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { SettingsStackParamList } from '../../../navigation/types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { AppHeader } from '../../../components/ui';
 import { theme } from '../../../theme';
 import styles from './SettingScreen.style';
 import { useConfirmationDialog } from '../../../components/context/ConfirmationDialogContext';
@@ -142,22 +143,11 @@ export function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header: back arrow + title only */}
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => navigation.getParent()?.navigate('HomeTab' as never)}
-          style={styles.backButton}
-          hitSlop={12}
-        >
-          <MaterialIcons
-            name="arrow-back"
-            size={24}
-            color={theme.colors.primary}
-          />
-        </Pressable>
-        <Text style={styles.headerTitle}>Setting</Text>
-        <View style={styles.headerRight} />
-      </View>
+      <AppHeader
+        title="Setting"
+        onBackPress={() => navigation.getParent()?.navigate('HomeTab' as never)}
+        showCartIcon={false}
+      />
 
       <ScrollView
         style={styles.scroll}

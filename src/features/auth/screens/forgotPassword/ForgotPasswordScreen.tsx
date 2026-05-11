@@ -11,7 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { styles } from './ForgotPasswordScreen.styles';
-import { Input, Button, OTPDialog } from '../../../../components/ui';
+import { AppHeader, Input, Button, OTPDialog } from '../../../../components/ui';
 import { AuthStackParamList } from '../../../../navigation/types';
 
 const appIcon = require('../../../../assets/images/app_icon.png');
@@ -59,16 +59,7 @@ export function ForgotPasswordScreen({ navigation }: ForgotPasswordScreenProps) 
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header: back + title with underline */}
-        <View style={styles.headerBar}>
-          <Pressable style={styles.backButton} onPress={() => navigation.goBack()} hitSlop={12}>
-            <Text style={styles.backArrow}>&lt;</Text>
-          </Pressable>
-          <Text style={[styles.headerTitle]}>
-            Forgot Password
-          </Text>
-          <View style={styles.headerSpacer} />
-        </View>
+        <AppHeader title="Forgot Password" showCartIcon={false} />
 
         <View style={styles.header}>
           <View style={styles.iconWrap}>

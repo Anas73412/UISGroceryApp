@@ -2,19 +2,18 @@ import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
-  Pressable,
   FlatList,
   TextInput,
   ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { CategoryCard } from '../home/components/CategoryCard';
 import { categoryController } from './controller';
 import { extractDataArray } from '../../utils/utils';
 import { CategoryModel } from '../../data/models/CategoryModel';
 import { IMAGE_BASE_URL } from '../../utils/constants';
 import { useLoading } from '../../components/context/LoadingContext';
+import { AppHeader } from '../../components/ui';
 import { theme } from '../../theme';
 import styles from './CategoryScreen.Style';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -54,22 +53,7 @@ export function CategoryScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Top app bar */}
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-          hitSlop={12}
-        >
-          <MaterialIcons
-            name="arrow-back"
-            size={24}
-            color={theme.colors.primary}
-          />
-        </Pressable>
-        <Text style={styles.headerTitle}>Categories</Text>
-        <View style={styles.headerRight} />
-      </View>
+      <AppHeader title="Categories" />
 
       {/* Search Category */}
       <View style={styles.searchContainer}>

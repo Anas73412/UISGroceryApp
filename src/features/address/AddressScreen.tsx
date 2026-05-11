@@ -17,6 +17,7 @@ import {
 import { useConfirmationDialog } from '../../components/context/ConfirmationDialogContext';
 import { useLoading } from '../../components/context/LoadingContext';
 import { useMessageDialog } from '../../components/context/MessageDialogContext';
+import { AppHeader } from '../../components/ui';
 import { appPrefs } from '../../data/repositories/AppPrefRepository';
 import { sessionStore } from '../../store/sessionStore';
 import { theme } from '../../theme';
@@ -197,21 +198,7 @@ export function AddressScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-          hitSlop={12}
-        >
-          <MaterialIcons
-            name="arrow-back"
-            size={24}
-            color={theme.colors.primary}
-          />
-        </Pressable>
-        <Text style={styles.headerTitle}>Delivery Address</Text>
-        <View style={styles.headerRight} />
-      </View>
+      <AppHeader title="Delivery Address" showCartIcon={false} />
       <View style={styles.addAddressContainer}>
         <Pressable
           style={styles.addAddressBtn}

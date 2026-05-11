@@ -8,13 +8,12 @@ import { searchContoller } from './controller';
 import {
   ActivityIndicator,
   FlatList,
-  Pressable,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import styles from './SearchScreen.Style';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { AppHeader } from '../../components/ui';
 import { theme } from '../../theme';
 import { ProductCard } from '../home/components/ProductCard';
 
@@ -94,21 +93,7 @@ export function SearchScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-          hitSlop={12}
-        >
-          <MaterialIcons
-            name="arrow-back"
-            size={24}
-            color={theme.colors.primary}
-          />
-        </Pressable>
-        <Text style={styles.headerTitle}>Search Product</Text>
-        <View style={styles.headerRight}></View>
-      </View>
+      <AppHeader title="Search Product" />
       {/** Search Product */}
 
       <View style={styles.searchContainer}>
