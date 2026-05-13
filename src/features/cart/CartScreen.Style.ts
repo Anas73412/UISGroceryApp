@@ -163,6 +163,10 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.gray600,
   },
+  errorLabel: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.error,
+  },
   summaryValue: {
     fontSize: theme.typography.fontSize.sm,
     fontWeight: '600',

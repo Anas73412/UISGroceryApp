@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -28,6 +28,9 @@ import { cartController } from './controller';
 import { CartProductModel } from '../home/components/ProductCard';
 import { AddressResponseModel } from '../../data/models/AddressModel';
 import { appPrefs } from '../../data/repositories/AppPrefRepository';
+import { toSafeNumber } from '../../utils/utils';
+import { DeliveryChargesModel } from '../../data/models/DeliveryChargesModel';
+import { useLoading } from '../../components/context/LoadingContext';
 
 type Line = CartResponseModel & { product?: ProductModel };
 
@@ -103,35 +106,81 @@ export function CartScreen() {
   const { showErrorDialog } = useMessageDialog();
   const [cartLines, setCartLines] = useState<Line[]>([]);
   const [listLoading, setListLoading] = useState(true);
+  const [isAddressResolving, setIsAddressResolving] = useState(false);
   const [addressList, setAddressList] = useState<AddressResponseModel[]>([]);
+  const [deliveryRate, setDeliveryRate] = useState<DeliveryChargesModel | null>(
+    null,
+  );
+  const { show, hide } = useLoading();
+  const [smallCartMinCharge, setSmallCartMinCharge] = useState(0);
+  const [smallCartAmount, setSmallCartAmount] = useState(0);
   const [selectedAddress, setSelectedAddress] =
     useState<string>('No address set yet');
   const refetchCartFromApi = useCallback(async () => {
     const next = await fetchCartLinesFromApi();
     setCartLines(next);
   }, []);
+
+  useEffect(() => {
+    if (!listLoading && !isAddressResolving) {
+      return;
+    }
+
+    show('Loading cart...');
+    return () => {
+      hide();
+    };
+  }, [hide, isAddressResolving, listLoading, show]);
+
   useFocusEffect(
     React.useCallback(() => {
       updateAddressUI();
     }, [addressList]),
   );
 
-  const updateAddressUI = async () => {
-    const selectedAddressId = await appPrefs.get('selectedAddressId');
-    console.log('Selected Address ID from prefs:', selectedAddressId);
-    if (selectedAddressId >= 0) {
-      const selectedAddressItem = addressList?.find(
-        add => add.addressId === selectedAddressId,
-      );
-
-      if (selectedAddressItem) {
-        setSelectedAddress(selectedAddressItem.mapAddress);
-        return;
-      }
+  const handleCheckout = () => {
+    if (!selectedAddress) {
+      showErrorDialog('Delivary Address', 'Please select delivery address');
+      return;
     }
-
-    setSelectedAddress('No address set yet');
   };
+
+  const updateAddressUI = useCallback(async () => {
+    setIsAddressResolving(true);
+    try {
+      const selectedAddressId = await appPrefs.get('selectedAddressId');
+      console.log('Selected Address ID from prefs:', selectedAddressId);
+      if (selectedAddressId >= 0) {
+        const selectedAddressItem = addressList?.find(
+          add => add.addressId === selectedAddressId,
+        );
+
+        if (selectedAddressItem) {
+          const deliveryRateId = await cartController.findDeliveryRateId(
+            toSafeNumber(selectedAddressItem.latitude ?? 0),
+            toSafeNumber(selectedAddressItem.longtitude ?? 0),
+          );
+
+          if (deliveryRateId != null) {
+            const deliveryRate = await cartController.fetchDeliveryCharge(
+              deliveryRateId,
+            );
+            setDeliveryRate(deliveryRate);
+          } else {
+            setDeliveryRate(null);
+          }
+
+          setSelectedAddress(selectedAddressItem.mapAddress);
+          return;
+        }
+      }
+
+      setDeliveryRate(null);
+      setSelectedAddress('No address set yet');
+    } finally {
+      setIsAddressResolving(false);
+    }
+  }, [addressList]);
   const totalQty = useMemo(
     () => cartLines.reduce((s, i) => s + (i.quantity ?? 0), 0),
     [cartLines],
@@ -160,6 +209,12 @@ export function CartScreen() {
           }
           const addressListFromDB = await cartController.getAddressListFromDB();
           setAddressList(addressListFromDB);
+          const smallCartChargeFromDB =
+            await cartController.getSmallCartMinCharge();
+          setSmallCartMinCharge(smallCartChargeFromDB);
+          const smallCartAmountFromDB =
+            await cartController.getSmallCartAmount();
+          setSmallCartAmount(smallCartAmountFromDB);
         } finally {
           if (!cancelled) setListLoading(false);
         }
@@ -194,49 +249,63 @@ export function CartScreen() {
   );
 
   const onIncrement = async (line: Line) => {
-    const next = (line.quantity ?? 0) + 1;
-    const cm = await buildCartModel(
-      line.productId ?? 0,
-      next,
-      line.cartId ?? 0,
-    );
-    const res = await cartSyncService.addOrUpdate(cm, next);
-    if (res.status) {
-      Toast.show({ type: 'success', text1: res.message });
-      await cartStore.getState().loadFromDB();
-      await refetchCartFromApi();
-    } else {
-      showErrorDialog('Cart', res.message ?? 'Could not update quantity');
+    show('Updating cart...');
+    try {
+      const next = (line.quantity ?? 0) + 1;
+      const cm = await buildCartModel(
+        line.productId ?? 0,
+        next,
+        line.cartId ?? 0,
+      );
+      const res = await cartSyncService.addOrUpdate(cm, next);
+      if (res.status) {
+        Toast.show({ type: 'success', text1: res.message });
+        await cartStore.getState().loadFromDB();
+        await refetchCartFromApi();
+      } else {
+        showErrorDialog('Cart', res.message ?? 'Could not update quantity');
+      }
+    } finally {
+      hide();
     }
   };
 
   const onDecrement = async (line: Line) => {
-    const next = Math.max(0, (line.quantity ?? 0) - 1);
-    const pid = line.productId ?? 0;
-    const cm = await buildCartModel(pid, next || 1, line.cartId ?? 0);
+    show('Updating cart...');
+    try {
+      const next = Math.max(0, (line.quantity ?? 0) - 1);
+      const pid = line.productId ?? 0;
+      const cm = await buildCartModel(pid, next || 1, line.cartId ?? 0);
 
-    if (next === 0) {
-      const cartIdForRemove =
-        cm.cartId && cm.cartId > 0 ? cm.cartId : line.cartId ?? 0;
-      const res = await cartSyncService.removeCartProduct(cartIdForRemove, pid);
-      if (res.status) {
-        Toast.show({ type: 'success', text1: res.message });
+      if (next === 0) {
+        const cartIdForRemove =
+          cm.cartId && cm.cartId > 0 ? cm.cartId : line.cartId ?? 0;
+        const res = await cartSyncService.removeCartProduct(
+          cartIdForRemove,
+          pid,
+        );
+        if (res.status) {
+          Toast.show({ type: 'success', text1: res.message });
+        } else {
+          showErrorDialog('Cart', res.message ?? 'Could not remove item');
+          return;
+        }
       } else {
-        showErrorDialog('Cart', res.message ?? 'Could not remove item');
-        return;
+        const updateModel = await buildCartModel(pid, next, line.cartId ?? 0);
+        const res = await cartSyncService.addOrUpdate(updateModel, next);
+        if (res.status) {
+          Toast.show({ type: 'success', text1: res.message });
+        } else {
+          showErrorDialog('Cart', res.message ?? 'Could not update quantity');
+          return;
+        }
       }
-    } else {
-      const updateModel = await buildCartModel(pid, next, line.cartId ?? 0);
-      const res = await cartSyncService.addOrUpdate(updateModel, next);
-      if (res.status) {
-        Toast.show({ type: 'success', text1: res.message });
-      } else {
-        showErrorDialog('Cart', res.message ?? 'Could not update quantity');
-        return;
-      }
+
+      await cartStore.getState().loadFromDB();
+      await refetchCartFromApi();
+    } finally {
+      hide();
     }
-    await cartStore.getState().loadFromDB();
-    await refetchCartFromApi();
   };
 
   const renderItem: ListRenderItem<Line> = ({ item }) => {
@@ -349,24 +418,42 @@ export function CartScreen() {
             </Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Delivery Fee</Text>
-            <Text style={[styles.summaryValue, styles.freeText]}>Free</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Taxes</Text>
-            <Text style={styles.summaryValue}>
-              {RUPEE_SIGN}
-              {(0).toFixed(2)}
+            <Text style={styles.summaryLabel}>
+              {deliveryRate?.amount ?? 0 > 0 ? 'Delivery Fee' : 'Free Delivery'}
+            </Text>
+            <Text style={[styles.summaryValue, styles.freeText]}>
+              {deliveryRate?.amount ?? 0 > 0
+                ? `${RUPEE_SIGN}${toSafeNumber(deliveryRate?.amount).toFixed(
+                    2,
+                  )}`
+                : 'Free'}
             </Text>
           </View>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Smart Cart Charges</Text>
+            <Text style={styles.summaryValue}>
+              {RUPEE_SIGN}
+              {subtotal < smallCartMinCharge
+                ? smallCartAmount.toFixed(2)
+                : '0.00'}
+            </Text>
+          </View>
+          <Text style={styles.errorLabel}>
+            No small cart charge on orders above {RUPEE_SIGN}
+            {smallCartMinCharge.toFixed(2)}
+          </Text>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total Price</Text>
             <Text style={styles.totalValue}>
               {RUPEE_SIGN}
-              {subtotal.toFixed(2)}
+              {(
+                subtotal +
+                (deliveryRate?.amount ?? 0) +
+                (subtotal < smallCartMinCharge ? smallCartAmount : 0)
+              ).toFixed(2)}
             </Text>
           </View>
-          <Pressable style={styles.checkoutBtn}>
+          <Pressable style={styles.checkoutBtn} onPress={handleCheckout}>
             <Text style={styles.checkoutLabel}>Proceed to Checkout</Text>
             <MaterialIcons
               name="arrow-forward"

@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: theme.spacing[6],
-    paddingTop: theme.spacing[4],
+    paddingTop: theme.spacing[2],
   },
   loadingFooter: {
     paddingVertical: theme.spacing[6],

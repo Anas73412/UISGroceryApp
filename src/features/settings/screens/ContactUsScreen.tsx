@@ -1,64 +1,179 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
   ScrollView,
   Pressable,
   Linking,
-  Platform,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../../theme';
-import { AppHeader, Input, Button } from '../../../components/ui';
+import { AppHeader } from '../../../components/ui';
 import Toast from 'react-native-toast-message';
+import { settingsService, type ContactApiItem } from '../service';
 
-const SUPPORT_PHONE = '1-800-FRESH';
-const SUPPORT_PHONE_TEL = 'tel:+180037374';
-const SUPPORT_EMAIL = 'help@freshcart.com';
-const OFFICE_ADDRESS_LINE_1 = '123 Fresh Way, Suite 400';
-const OFFICE_ADDRESS_LINE_2 = 'New York, NY 10001';
+type ContactKind = 'phone' | 'email';
+
+type ContactCardItem = {
+  id: string;
+  kind: ContactKind;
+  label: string;
+  value: string;
+  icon: 'call' | 'email';
+};
+
+type ContactVisualConfig = {
+  cardBackground: string;
+  accentBackground: string;
+  iconBackground: string;
+  iconColor: string;
+  actionLabel: string;
+  actionHelperText: string;
+  actionChipBackground: string;
+  actionChipTextColor: string;
+};
+
+const EMAIL_REGEX = /\S+@\S+\.\S+/i;
+const PHONE_REGEX = /[+\d][\d\s-]{5,}/;
+
+const sanitizePhoneNumber = (value: string) => value.replace(/[^\d+]/g, '');
+
+const getContactVisualConfig = (kind: ContactKind): ContactVisualConfig => {
+  if (kind === 'phone') {
+    return {
+      cardBackground: '#EAF9FB',
+      accentBackground: '#CFEFF4',
+      iconBackground: '#39afbc',
+      iconColor: theme.colors.white,
+      actionLabel: 'Call now',
+      actionHelperText: 'Opens your phone app',
+      actionChipBackground: '#39afbc',
+      actionChipTextColor: theme.colors.white,
+    };
+  }
+
+  return {
+    cardBackground: '#F3EEFF',
+    accentBackground: '#E3D8FF',
+    iconBackground: '#7C5CE5',
+    iconColor: theme.colors.white,
+    actionLabel: 'Send email',
+    actionHelperText: 'Opens your mail app',
+    actionChipBackground: '#7C5CE5',
+    actionChipTextColor: theme.colors.white,
+  };
+};
+
+const getContactKind = (item: ContactApiItem): ContactKind | null => {
+  const description = item.description?.trim() ?? '';
+  const combinedText = `${item.title} ${description}`.toLowerCase();
+
+  if (EMAIL_REGEX.test(description) || combinedText.includes('email')) {
+    return 'email';
+  }
+
+  if (
+    PHONE_REGEX.test(description) ||
+    combinedText.includes('phone') ||
+    combinedText.includes('call') ||
+    combinedText.includes('contact')
+  ) {
+    return 'phone';
+  }
+
+  return null;
+};
+
+const mapToContactCard = (item: ContactApiItem): ContactCardItem | null => {
+  const kind = getContactKind(item);
+  const value = item.description?.trim();
+
+  if (!kind || !value) {
+    return null;
+  }
+
+  return {
+    id: `${kind}-${item.id}`,
+    kind,
+    label: kind === 'phone' ? 'Phone number' : 'Email address',
+    value,
+    icon: kind === 'phone' ? 'call' : 'email',
+  };
+};
 
 export function ContactUsScreen() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
+  const [contactItems, setContactItems] = useState<ContactCardItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const openDial = () => {
-    Linking.openURL(SUPPORT_PHONE_TEL).catch(() => {
+  const loadContactDetails = useCallback(async () => {
+    setIsLoading(true);
+    setErrorMessage('');
+
+    const response = await settingsService.fetchContactDetails();
+
+    if (!response.data) {
+      setContactItems([]);
+      setErrorMessage(response.message || 'Could not load contact details.');
+      setIsLoading(false);
+      return;
+    }
+
+    const mappedItems = response.data
+      .map(mapToContactCard)
+      .filter((item): item is ContactCardItem => item !== null);
+
+    const nextItems = [
+      mappedItems.find(item => item.kind === 'phone'),
+      mappedItems.find(item => item.kind === 'email'),
+    ].filter((item): item is ContactCardItem => item !== undefined);
+
+    setContactItems(nextItems);
+    setErrorMessage(
+      nextItems.length === 0
+        ? 'No contact details are available right now.'
+        : '',
+    );
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadContactDetails();
+  }, [loadContactDetails]);
+
+  const openPhone = (phoneNumber: string) => {
+    const sanitizedPhoneNumber = sanitizePhoneNumber(phoneNumber);
+
+    if (!sanitizedPhoneNumber) {
+      Toast.show({ type: 'error', text1: 'Phone number is not available.' });
+      return;
+    }
+
+    Linking.openURL(`tel:${sanitizedPhoneNumber}`).catch(() => {
       Toast.show({ type: 'error', text1: 'Could not start the phone app.' });
     });
   };
 
-  const openMail = (body?: string) => {
-    const subject = 'GroceryApp — Contact from app';
-    const parts = [`subject=${encodeURIComponent(subject)}`];
-    if (body?.trim()) {
-      parts.push(`body=${encodeURIComponent(body.trim())}`);
+  const openMail = (emailAddress: string) => {
+    if (!emailAddress.trim()) {
+      Toast.show({ type: 'error', text1: 'Email address is not available.' });
+      return;
     }
-    const url = `mailto:${SUPPORT_EMAIL}?${parts.join('&')}`;
-    Linking.openURL(url).catch(() => {
+
+    Linking.openURL(`mailto:${emailAddress.trim()}`).catch(() => {
       Toast.show({ type: 'error', text1: 'Could not open the mail app.' });
     });
   };
 
-  const onSend = () => {
-    if (message.trim().length < 5) {
-      Toast.show({
-        type: 'info',
-        text1: 'Add a few words in your message',
-      });
+  const handleContactPress = (item: ContactCardItem) => {
+    if (item.kind === 'phone') {
+      openPhone(item.value);
       return;
     }
-    const body = [
-      name.trim() && `Name: ${name.trim()}`,
-      email.trim() && `Email: ${email.trim()}`,
-      message.trim(),
-    ]
-      .filter(Boolean)
-      .join('\n\n');
-    openMail(body);
-    Toast.show({ type: 'success', text1: 'Opening your email app…' });
+
+    openMail(item.value);
   };
 
   return (
@@ -69,114 +184,140 @@ export function ContactUsScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.screenTitle}>Get in touch</Text>
-        <Text style={styles.screenSubtitle}>
-          We're here to help you with your grocery needs and any questions you might
-          have.
-        </Text>
-
-        <View style={styles.contactCardsRow}>
-          <Pressable
-            style={({ pressed }) => [styles.contactCard, { opacity: pressed ? 0.85 : 1 }]}
-            onPress={openDial}
-          >
-            <View style={styles.contactCardIcon}>
-              <MaterialIcons name="call" size={22} color={theme.colors.secondary} />
-            </View>
-            <Text style={styles.contactCardLabel}>Hotline</Text>
-            <Text style={styles.contactCardValue}>{SUPPORT_PHONE}</Text>
-          </Pressable>
-
-          <Pressable
-            style={({ pressed }) => [styles.contactCard, { opacity: pressed ? 0.85 : 1 }]}
-            onPress={() => openMail()}
-          >
-            <View style={styles.contactCardIcon}>
-              <MaterialIcons name="email" size={22} color={theme.colors.secondary} />
-            </View>
-            <Text style={styles.contactCardLabel}>Email</Text>
-            <Text style={styles.contactCardValue}>{SUPPORT_EMAIL}</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Send us a message</Text>
-
-          <Input
-            label="NAME"
-            value={name}
-            onChangeText={setName}
-            placeholder="John Doe"
-            containerStyle={styles.inputContainer}
-            labelStyle={styles.inputLabel}
-          />
-          <Input
-            label="EMAIL ADDRESS"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            placeholder="john@example.com"
-            containerStyle={styles.inputContainer}
-            labelStyle={styles.inputLabel}
-          />
-          <Input
-            label="MESSAGE"
-            value={message}
-            onChangeText={setMessage}
-            placeholder="How can we help you today?"
-            multiline
-            numberOfLines={4}
-            containerStyle={styles.inputContainer}
-            labelStyle={styles.inputLabel}
-            inputStyle={Platform.select({
-              android: { minHeight: 96, textAlignVertical: 'top' as const },
-              default: { minHeight: 96 },
-            })}
-          />
-          <Button
-            title="Send Message"
-            onPress={onSend}
-            containerStyle={styles.sendButton}
-            textStyle={styles.sendButtonText}
-          />
-        </View>
-
-        <View style={styles.officeCard}>
-          <View style={styles.mapCard}>
-            <MaterialIcons name="map" size={44} color="#7f8892" />
-            <View style={styles.mapPin}>
-              <MaterialIcons name="place" size={16} color={theme.colors.white} />
-            </View>
+        <View style={styles.heroCard}>
+          <View style={styles.heroIconWrap}>
+            <MaterialIcons
+              name="support-agent"
+              size={34}
+              color={theme.colors.primary}
+            />
           </View>
-          <View style={styles.officeInfoRow}>
-            <MaterialIcons name="location-on" size={18} color={theme.colors.secondary} />
-            <View style={styles.officeTextWrap}>
-              <Text style={styles.officeTitle}>Main Office</Text>
-              <Text style={styles.officeAddress}>
-                {OFFICE_ADDRESS_LINE_1}
-                {'\n'}
-                {OFFICE_ADDRESS_LINE_2}
+          <Text style={styles.screenTitle}>Get in touch</Text>
+          <Text style={styles.screenSubtitle}>
+            Need help or have a question? Our contact details are provided
+            through the app. Tap the phone number to call us directly or tap the
+            email address to send us a message. Our support team is here to
+            assist you.
+          </Text>
+        </View>
+
+        <View style={styles.listCard}>
+          {isLoading ? (
+            <View style={styles.feedbackState}>
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <Text style={styles.feedbackText}>
+                Loading contact details...
               </Text>
             </View>
-          </View>
-        </View>
+          ) : null}
 
-        <View style={styles.socialSection}>
-          <Text style={styles.socialLabel}>FOLLOW OUR JOURNEY</Text>
-          <View style={styles.socialRow}>
-            <Pressable style={styles.socialIconButton}>
-              <MaterialIcons name="public" size={20} color={theme.colors.secondary} />
-            </Pressable>
-            <Pressable style={styles.socialIconButton}>
-              <MaterialIcons name="share" size={20} color={theme.colors.secondary} />
-            </Pressable>
-            <Pressable style={styles.socialIconButton}>
-              <MaterialIcons name="smart-display" size={20} color={theme.colors.secondary} />
-            </Pressable>
-          </View>
+          {!isLoading && errorMessage ? (
+            <View style={styles.feedbackState}>
+              <MaterialIcons
+                name="error-outline"
+                size={22}
+                color={theme.colors.warning}
+              />
+              <Text style={styles.feedbackText}>{errorMessage}</Text>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.retryButton,
+                  pressed && styles.retryButtonPressed,
+                ]}
+                onPress={loadContactDetails}
+              >
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </Pressable>
+            </View>
+          ) : null}
+
+          {!isLoading &&
+            !errorMessage &&
+            contactItems.map((item, index) => {
+              const visualConfig = getContactVisualConfig(item.kind);
+
+              return (
+                <Pressable
+                  key={item.id}
+                  style={({ pressed }) => [
+                    styles.contactCard,
+                    index > 0 && styles.contactCardSpacing,
+                    { backgroundColor: visualConfig.cardBackground },
+                    pressed && styles.contactCardPressed,
+                  ]}
+                  onPress={() => handleContactPress(item)}
+                >
+                  {/* <View
+                    style={[
+                      styles.contactCardAccent,
+                      {
+                        backgroundColor: visualConfig.accentBackground,
+                      },
+                    ]}
+                  /> */}
+
+                  <View style={styles.contactCardHeader}>
+                    <View
+                      style={[
+                        styles.contactIconWrap,
+                        {
+                          backgroundColor: visualConfig.iconBackground,
+                        },
+                      ]}
+                    >
+                      <MaterialIcons
+                        name={item.icon}
+                        size={24}
+                        color={visualConfig.iconColor}
+                      />
+                    </View>
+
+                    <View style={styles.contactTextWrap}>
+                      <Text style={styles.contactLabel}>{item.label}</Text>
+                      <Text style={styles.contactValue}>{item.value}</Text>
+                    </View>
+
+                    {/* <View style={styles.contactTypeBadge}>
+                      <Text style={styles.contactTypeBadgeText}>
+                        {item.kind === 'phone' ? 'Call' : 'Email'}
+                      </Text>
+                    </View> */}
+                  </View>
+
+                  <View style={styles.contactCardFooter}>
+                    <Text style={styles.contactHint}>
+                      {visualConfig.actionHelperText}
+                    </Text>
+
+                    <View
+                      style={[
+                        styles.actionChip,
+                        {
+                          backgroundColor: visualConfig.actionChipBackground,
+                        },
+                      ]}
+                    >
+                      <MaterialIcons
+                        name={item.icon}
+                        size={16}
+                        color={visualConfig.actionChipTextColor}
+                      />
+                      <Text
+                        style={[
+                          styles.actionChipText,
+                          {
+                            color: visualConfig.actionChipTextColor,
+                          },
+                        ]}
+                      >
+                        {visualConfig.actionLabel}
+                      </Text>
+                    </View>
+                  </View>
+                </Pressable>
+              );
+            })}
         </View>
       </ScrollView>
     </View>
@@ -186,191 +327,172 @@ export function ContactUsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#eef1f5',
-  },
-  header: {
-    height: 74,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: theme.colors.borderLight,
-    paddingHorizontal: theme.spacing[4],
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  iconButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: theme.typography.fontSize.xl,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-  avatarWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: theme.colors.gray300,
-    backgroundColor: theme.colors.gray100,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: theme.colors.backgroundSecondary,
   },
   scroll: { flex: 1 },
   scrollContent: {
-    padding: theme.spacing[3],
+    padding: theme.spacing[4],
     paddingBottom: theme.spacing[10],
   },
+  heroCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing[4],
+    marginBottom: theme.spacing[4],
+    alignItems: 'center',
+    shadowColor: theme.colors.black,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
+  },
+  heroIconWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    backgroundColor: 'rgba(57, 175, 188, 0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing[3],
+  },
   screenTitle: {
-    fontSize: 34,
+    fontSize: theme.typography.fontSize['2xl'],
     fontWeight: '700',
-    color: '#1f1f1f',
+    color: theme.colors.secondary,
     marginBottom: theme.spacing[1],
   },
   screenSubtitle: {
     fontSize: theme.typography.fontSize.base,
     color: theme.colors.gray700,
     lineHeight: 22,
-    marginBottom: theme.spacing[4],
+    textAlign: 'center',
   },
-  contactCardsRow: {
-    flexDirection: 'row',
-    gap: theme.spacing[2],
-    marginBottom: theme.spacing[3],
-  },
-  contactCard: {
-    flex: 1,
+  listCard: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 14,
-    paddingVertical: theme.spacing[3],
-    paddingHorizontal: theme.spacing[2],
-    alignItems: 'center',
-    shadowColor: theme.colors.black,
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  contactCardIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(57, 175, 188, 0.16)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: theme.spacing[2],
-  },
-  contactCardLabel: {
-    fontSize: theme.typography.fontSize.lg,
-    fontWeight: '700',
-    color: '#1f1f1f',
-    marginBottom: 2,
-  },
-  contactCardValue: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.gray600,
-  },
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 14,
-    padding: theme.spacing[3],
-    marginBottom: theme.spacing[3],
-  },
-  cardTitle: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#1f1f1f',
-    marginBottom: theme.spacing[2],
-  },
-  inputContainer: {
-    marginBottom: theme.spacing[2],
-  },
-  inputLabel: {
-    fontSize: theme.typography.fontSize.xs,
-    color: '#121212',
-    fontWeight: '700',
-    letterSpacing: 0.4,
-  },
-  sendButton: {
-    marginTop: theme.spacing[1],
-    borderRadius: 12,
-    backgroundColor: theme.colors.primary,
-  },
-  sendButtonText: {
-    fontSize: theme.typography.fontSize.lg,
-    fontWeight: '500',
-  },
-  officeCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 14,
-    overflow: 'hidden',
-    marginBottom: theme.spacing[3],
-  },
-  mapCard: {
-    height: 170,
-    backgroundColor: '#9fa5ad',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  mapPin: {
-    position: 'absolute',
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  officeInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    borderRadius: theme.borderRadius.lg,
     paddingHorizontal: theme.spacing[3],
     paddingVertical: theme.spacing[3],
-    gap: theme.spacing[2],
-  },
-  officeTextWrap: {
-    flex: 1,
-  },
-  officeTitle: {
-    fontSize: theme.typography.fontSize.lg,
-    fontWeight: '700',
-    color: '#1f1f1f',
-  },
-  officeAddress: {
-    marginTop: 2,
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.gray600,
-    lineHeight: 20,
-  },
-  socialSection: {
-    alignItems: 'center',
-    marginTop: theme.spacing[1],
-  },
-  socialLabel: {
-    fontSize: 11,
-    color: '#2f2f2f',
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    marginBottom: theme.spacing[2],
-  },
-  socialRow: {
-    flexDirection: 'row',
-    gap: theme.spacing[3],
-  },
-  socialIconButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
     shadowColor: theme.colors.black,
     shadowOpacity: 0.06,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
+  },
+  feedbackState: {
+    paddingVertical: theme.spacing[6],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  feedbackText: {
+    marginTop: theme.spacing[2],
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.gray600,
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: theme.spacing[3],
+    paddingHorizontal: theme.spacing[4],
+    paddingVertical: theme.spacing[2],
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.primary,
+  },
+  retryButtonPressed: {
+    opacity: 0.85,
+  },
+  retryButtonText: {
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: '600',
+    color: theme.colors.white,
+  },
+  contactCard: {
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing[4],
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.75)',
+  },
+  contactCardSpacing: {
+    marginTop: theme.spacing[3],
+  },
+  contactCardPressed: {
+    opacity: 0.92,
+  },
+  contactCardAccent: {
+    position: 'absolute',
+    top: -18,
+    right: -18,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+  },
+  contactCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  contactIconWrap: {
+    width: 54,
+    height: 54,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: theme.spacing[3],
+  },
+  contactTextWrap: {
+    flex: 1,
+  },
+  contactLabel: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.gray500,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: 4,
+  },
+  contactValue: {
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: '700',
+    color: theme.colors.gray800,
+  },
+  contactTypeBadge: {
+    minWidth: 58,
+    paddingHorizontal: theme.spacing[2],
+    paddingVertical: 6,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: 'rgba(255,255,255,0.72)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  contactTypeBadgeText: {
+    fontSize: theme.typography.fontSize.xs,
+    fontWeight: '700',
+    color: theme.colors.secondary,
+  },
+  contactCardFooter: {
+    marginTop: theme.spacing[3],
+    paddingTop: theme.spacing[3],
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(31, 99, 122, 0.12)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: theme.spacing[2],
+  },
+  contactHint: {
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: '600',
+    color: theme.colors.gray600,
+    flex: 1,
+  },
+  actionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing[3],
+    paddingVertical: 10,
+  },
+  actionChipText: {
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: '700',
   },
 });

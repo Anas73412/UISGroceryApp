@@ -86,6 +86,16 @@ class ConfigRepository {
       .fetch();
     return configs.length > 0 ? (configs as DeliveryChargesModel[]) : [];
   }
+
+  async getDeliveryChargeFromDB(
+    rateId: number,
+  ): Promise<DeliveryChargesModel | null> {
+    const configs = await database
+      .get(DB_TABLES.DELIVERY_CHARGE_TABLE)
+      .query(Q.where('rateId', rateId))
+      .fetch();
+    return configs.length > 0 ? (configs[0] as DeliveryChargesModel) : null;
+  }
 }
 
 export default new ConfigRepository();

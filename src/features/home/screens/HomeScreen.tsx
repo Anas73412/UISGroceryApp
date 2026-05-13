@@ -237,22 +237,23 @@ export function HomeScreen() {
                   />
                 </Pressable>
               </View>
-
-              <View style={styles.searchContainer}>
-                <TextInput
-                  placeholder="Search for groceries, milk, or more."
-                  placeholderTextColor="#9ca3af"
-                  style={styles.searchInput}
-                />
-                <Pressable
-                  style={styles.filterButton}
-                  onPress={() => {
-                    navigation.navigate('SearchScreen');
-                  }}
-                >
-                  <Text style={styles.filterIcon}>☰</Text>
-                </Pressable>
-              </View>
+              <Pressable
+                onPress={() => {
+                  navigation.navigate('SearchScreen');
+                }}
+              >
+                <View style={styles.searchContainer}>
+                  <TextInput
+                    placeholder="Search for groceries, milk, or more."
+                    placeholderTextColor="#9ca3af"
+                    readOnly={true}
+                    style={styles.searchInput}
+                  />
+                  <View style={styles.filterButton}>
+                    <Text style={styles.filterIcon}>☰</Text>
+                  </View>
+                </View>
+              </Pressable>
 
               {/** Slider HOrizontal caraousal  */}
               {sliders.length > 0 && (

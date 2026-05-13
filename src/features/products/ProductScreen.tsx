@@ -53,7 +53,6 @@ export function ProductScreen() {
       );
 
       const pagingData = res?.data;
-      console.log('Produ1Data1', res?.data);
       if (pagingData) {
         const newProducts = pagingData.products ?? [];
         setProducts(prev => (append ? [...prev, ...newProducts] : newProducts));

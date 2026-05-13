@@ -34,3 +34,45 @@ export function distanceInKm(
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return EARTH_RADIUS_KM * c;
 }
+
+export function toSafeNumber(value: unknown, fallback = 0): number {
+  try {
+    if (value == null) {
+      return fallback;
+    }
+
+    if (typeof value === 'number') {
+      return Number.isFinite(value) ? value : fallback;
+    }
+
+    if (typeof value === 'boolean') {
+      return value ? 1 : 0;
+    }
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+
+      if (!trimmed) {
+        return fallback;
+      }
+
+      const normalized = trimmed.replace(/,/g, '');
+
+      const parsed = Number(normalized);
+
+      return Number.isFinite(parsed) ? parsed : fallback;
+    }
+
+    if (typeof value === 'object' && 'valueOf' in value) {
+      const primitive = (value as { valueOf: () => unknown }).valueOf();
+
+      if (primitive !== value) {
+        return toSafeNumber(primitive, fallback);
+      }
+    }
+
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
