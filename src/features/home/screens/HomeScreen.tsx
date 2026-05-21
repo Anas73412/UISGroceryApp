@@ -76,10 +76,38 @@ export function HomeScreen() {
         setCartQuantities(prev =>
           quantity === 0 ? { ...prev, [id]: 0 } : { ...prev, [id]: quantity },
         );
+        setProducts(prev =>
+          prev.map(p =>
+            p.productId === id ? { ...p, cartQuantity: quantity } : p,
+          ),
+        );
       }
     },
     [],
   );
+
+  const syncCartQuantitiesFromStore = useCallback(async () => {
+    await cartStore.getState().loadFromDB();
+    const qtyByProductId = new Map(
+      cartStore.getState().items.map(item => [
+        item.productId ?? 0,
+        item.quantity ?? 0,
+      ]),
+    );
+
+    setProducts(prev => {
+      const nextCartQuantities: Record<number, number> = {};
+      const nextProducts = prev.map(p => {
+        const id = p.productId ?? 0;
+        const qty = qtyByProductId.get(id) ?? 0;
+        nextCartQuantities[id] = qty;
+        return { ...p, cartQuantity: qty };
+      });
+      setCartQuantities(nextCartQuantities);
+      return nextProducts;
+    });
+  }, []);
+
   useEffect(() => {
     loadAllData();
   }, []);
@@ -87,7 +115,8 @@ export function HomeScreen() {
   useFocusEffect(
     React.useCallback(() => {
       updateAddressUI();
-    }, [addressList]),
+      void syncCartQuantitiesFromStore();
+    }, [addressList, syncCartQuantitiesFromStore]),
   );
 
   const updateAddressUI = async () => {
@@ -140,7 +169,7 @@ export function HomeScreen() {
       await loadProducts(1, false);
       setSliders(sliderData);
       setCategories(categories);
-      await cartStore.getState().loadFromDB();
+      await syncCartQuantitiesFromStore();
 
       hide();
     } catch (error) {

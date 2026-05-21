@@ -29,6 +29,10 @@ const HIDE_TAB_BAR_ROUTES = [
   'DeliveryAddress',
   'AddAddress',
   'ContactUs',
+  'MyProductRequest',
+  'NewProductRequest',
+  'Order',
+  'OrderDetail',
 ];
 
 export function BottomTabBar({

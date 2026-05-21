@@ -6,6 +6,10 @@ import { AboutUsScreen } from '../features/settings/screens/AboutUsScreen';
 import { ContactUsScreen } from '../features/settings/screens/ContactUsScreen';
 import { AddressScreen } from '../features/address/AddressScreen';
 import { AddAddressScreen } from '../features/address/AddAddressScreen';
+import OrderScreen from '../features/orders/screens/OrderScreen';
+import OrderDetailScreen from '../features/orders/screens/OrderDetailScreen';
+import { MyProductRequestScreen } from '../features/productrequests/MyProductRequestScreen';
+import { NewProductRequestScreen } from '../features/productrequests/NewProductRequestScreen';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
@@ -17,6 +21,16 @@ export function SettingsStackNavigator() {
       <Stack.Screen name="ContactUs" component={ContactUsScreen} />
       <Stack.Screen name="DeliveryAddress" component={AddressScreen} />
       <Stack.Screen name="AddAddress" component={AddAddressScreen} />
+      <Stack.Screen name="Order" component={OrderScreen} />
+      <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
+      <Stack.Screen
+        name="MyProductRequest"
+        component={MyProductRequestScreen}
+      />
+      <Stack.Screen
+        name="NewProductRequest"
+        component={NewProductRequestScreen}
+      />
     </Stack.Navigator>
   );
 }

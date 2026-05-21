@@ -46,6 +46,10 @@ class ConfigRepository {
     return configs.length > 0 ? (configs[0] as ConfigModel) : null;
   }
 
+  async getConfigsFromDB(): Promise<ConfigModel[] | []> {
+    const configs = await database.get(DB_TABLES.CONFIG_TABLE).query().fetch();
+    return configs.length > 0 ? (configs as ConfigModel[]) : [];
+  }
   async saveAllDeliveryCharges(charges: DeliveryChargesModel[]) {
     return database.write(async () => {
       const table = database.get(DB_TABLES.DELIVERY_CHARGE_TABLE);

@@ -6,6 +6,7 @@ import type {
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { ProductModel } from '../data/models/ProductModel';
 import type { AddressResponseModel } from '../data/models/AddressModel';
+import type { OrderModel } from '../data/models/OrderModel';
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -53,6 +54,10 @@ export type SettingsStackParamList = {
   AboutUs: undefined;
   ContactUs: undefined;
   DeliveryAddress: undefined;
+  Order: undefined;
+  OrderDetail: { order: OrderModel };
+  MyProductRequest: undefined;
+  NewProductRequest: undefined;
   AddAddress: AddAddressRouteParams;
 };
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

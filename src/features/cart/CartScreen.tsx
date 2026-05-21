@@ -103,7 +103,7 @@ async function fetchCartLinesFromApi(): Promise<Line[]> {
 
 export function CartScreen() {
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
-  const { showErrorDialog } = useMessageDialog();
+  const { showErrorDialog, showSuccessDialog } = useMessageDialog();
   const [cartLines, setCartLines] = useState<Line[]>([]);
   const [listLoading, setListLoading] = useState(true);
   const [isAddressResolving, setIsAddressResolving] = useState(false);
@@ -114,6 +114,7 @@ export function CartScreen() {
   const { show, hide } = useLoading();
   const [smallCartMinCharge, setSmallCartMinCharge] = useState(0);
   const [smallCartAmount, setSmallCartAmount] = useState(0);
+  const [selectedAddressId, setSelectedAddressId] = useState(0);
   const [selectedAddress, setSelectedAddress] =
     useState<string>('No address set yet');
   const refetchCartFromApi = useCallback(async () => {
@@ -139,17 +140,25 @@ export function CartScreen() {
   );
 
   const handleCheckout = () => {
-    if (!selectedAddress) {
+    console.log('SelectedAddress', selectedAddressId);
+    if (selectedAddressId <= 0) {
       showErrorDialog('Delivary Address', 'Please select delivery address');
       return;
     }
+    const amount = (
+      subtotal +
+      (deliveryRate?.amount ?? 0) +
+      (subtotal < smallCartMinCharge ? smallCartAmount : 0)
+    ).toFixed(2);
+
+    showSuccessDialog('Cart Checkout', 'Total Checkout Amount  ' + amount);
   };
 
   const updateAddressUI = useCallback(async () => {
     setIsAddressResolving(true);
     try {
-      const selectedAddressId = await appPrefs.get('selectedAddressId');
-      console.log('Selected Address ID from prefs:', selectedAddressId);
+      const prefAddressId = await appPrefs.get('selectedAddressId');
+      setSelectedAddressId(prefAddressId);
       if (selectedAddressId >= 0) {
         const selectedAddressItem = addressList?.find(
           add => add.addressId === selectedAddressId,
@@ -202,6 +211,7 @@ export function CartScreen() {
       (async () => {
         setListLoading(true);
         try {
+          await cartController.loadAppConfig();
           const next = await fetchCartLinesFromApi();
           if (!cancelled) {
             setCartLines(next);

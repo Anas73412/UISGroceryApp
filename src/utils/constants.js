@@ -3,6 +3,7 @@ import { Dimensions } from "react-native";
 export const SUCCESS = 'Success';
 export const FAILED = 'Failed';
 export const SUB_PATH='/api/unitedweb';
+export const SUB_ORDER_PATH='/api/Order';
 export const IMAGE_BASE_URL='https://unitedinternetservice.in/';
 export const RUPEE_SIGN='\u20B9';
 export const UPLOAD_BASE_URL='https://unitedinternetservice.in/api/Fileuplodd';
@@ -28,6 +29,9 @@ export const API_ENDPOINTS = {
   UPDATE_CUSTOMER_ADDRESS: `${SUB_PATH}/updateCustomerAddress`,
   GET_DELIVERY_CHARGE: `${SUB_PATH}/getDeliveryCharges`,
   DELETE_CUSTOMER_ADDRESS: `${SUB_PATH}/deleteCustomerAddress`,
+  GET_ALL_ORDERS: `${SUB_PATH}/getUserAllOrders`,
+  GET_REQUETED_PRODUCT_LIST:`${SUB_ORDER_PATH}/getRequestedProductList`,
+  NEW_PRODUCT_REQUEST:`${UPLOAD_BASE_URL}/addProductRequest`,
 };
 
 export const { width: SCREEN_WIDTH } = Dimensions.get('window');

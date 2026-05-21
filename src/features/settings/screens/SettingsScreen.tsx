@@ -50,6 +50,12 @@ const SETTING_OPTIONS: SettingOption[] = [
     label: 'Contact Us',
   },
   {
+    id: 'orders',
+    icon: 'shopping-bag',
+    iconBg: '#F4C430',
+    label: 'Your Orders',
+  },
+  {
     id: 'requests',
     icon: 'history',
     iconBg: '#9E7CC1',
@@ -99,11 +105,11 @@ export function SettingsScreen() {
       case 'delivery':
         navigation.navigate('DeliveryAddress');
         break;
+      case 'orders':
+        navigation.navigate('Order');
+        break;
       case 'requests':
-        showErrorDialog(
-          'Coming soon',
-          'My product requests will be available soon.',
-        );
+        navigation.navigate('MyProductRequest');
         break;
       case 'logout':
         showConfirm({

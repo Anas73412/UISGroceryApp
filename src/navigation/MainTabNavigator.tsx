@@ -18,6 +18,10 @@ const HIDE_TAB_BAR_ROUTES = [
   'ProductScreen',
   'ProductDetailScreen',
   'HomeDeliveryAddress',
+  'MyProductRequest',
+  'NewProductRequest',
+  'Order',
+  'OrderDetail',
 ];
 export function MainTabNavigator() {
   return (

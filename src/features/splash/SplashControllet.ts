@@ -37,7 +37,6 @@ export const SplashController = {
   async loadDeliveryCharges() {
     try {
       const res = await splashService.fetchDeliveryCharges();
-      console.log('Delivery Charges API Response:', res);
       if (res.status === SUCCESS && res.data && Array.isArray(res.data)) {
         await ConfigRepository.saveAllDeliveryCharges(res.data);
         return res;

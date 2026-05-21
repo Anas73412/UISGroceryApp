@@ -15,6 +15,12 @@ type AppHeaderProps = {
   onBackPress?: () => void;
   showCartIcon?: boolean;
   onCartPress?: () => void;
+  /** When set, overrides default title color. */
+  titleColor?: string;
+  showNotificationIcon?: boolean;
+  onNotificationPress?: () => void;
+  showNewsButton?: boolean;
+  onNewsPress?: () => void;
 };
 
 export function AppHeader({
@@ -22,6 +28,11 @@ export function AppHeader({
   onBackPress,
   showCartIcon = true,
   onCartPress,
+  titleColor,
+  showNotificationIcon = false,
+  onNotificationPress,
+  showNewsButton = false,
+  onNewsPress,
 }: AppHeaderProps) {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const cartCount = cartStore(s =>
@@ -48,6 +59,14 @@ export function AppHeader({
     navigation.navigate('CartTab' as never);
   };
 
+  const handleNotificationPress = () => {
+    if (onNotificationPress) {
+      onNotificationPress();
+    }
+  };
+
+  const resolvedTitleColor = titleColor ?? theme.colors.gray800;
+
   return (
     <View style={styles.header}>
       <Pressable
@@ -58,35 +77,63 @@ export function AppHeader({
         <MaterialIcons
           name="chevron-left"
           size={28}
-          color={theme.colors.gray800}
+          color={resolvedTitleColor}
         />
       </Pressable>
 
-      <Text style={styles.headerTitle} numberOfLines={1}>
+      <Text
+        style={[styles.headerTitle, { color: resolvedTitleColor }]}
+        numberOfLines={1}
+      >
         {title}
       </Text>
 
-      {showCartIcon ? (
+      {showNotificationIcon ? (
         <Pressable
-          onPress={handleCartPress}
+          onPress={handleNotificationPress}
           style={styles.cartIconWrap}
           hitSlop={12}
         >
           <MaterialIcons
-            name="shopping-cart"
+            name="notifications-none"
             size={24}
             color={theme.colors.gray800}
           />
-          {cartCount > 0 && (
-            <View style={styles.headerCartBadge}>
-              <Text style={styles.headerCartBadgeText}>
-                {cartCount > 99 ? '99+' : cartCount}
-              </Text>
-            </View>
-          )}
         </Pressable>
       ) : (
-        <View style={styles.rightSpacer} />
+        <View style={styles.headerRight}>
+          {showNewsButton ? (
+            <Pressable
+              onPress={onNewsPress}
+              style={styles.newsButton}
+              hitSlop={8}
+            >
+              <Text style={styles.newsButtonText}>News</Text>
+            </Pressable>
+          ) : null}
+          {showCartIcon ? (
+            <Pressable
+              onPress={handleCartPress}
+              style={styles.cartIconWrap}
+              hitSlop={12}
+            >
+              <MaterialIcons
+                name="shopping-cart"
+                size={24}
+                color={theme.colors.primary}
+              />
+              {cartCount > 0 && (
+                <View style={styles.headerCartBadge}>
+                  <Text style={styles.headerCartBadgeText}>
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
+          ) : !showNewsButton ? (
+            <View style={styles.rightSpacer} />
+          ) : null}
+        </View>
       )}
     </View>
   );
@@ -130,6 +177,24 @@ const styles = StyleSheet.create({
   rightSpacer: {
     width: 40,
     height: 40,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing[2],
+  },
+  newsButton: {
+    backgroundColor: theme.colors.secondary,
+    borderRadius: theme.borderRadius.md,
+    paddingVertical: theme.spacing[1],
+    paddingHorizontal: theme.spacing[3],
+    minHeight: 32,
+    justifyContent: 'center',
+  },
+  newsButtonText: {
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.textOnPrimary,
   },
   headerCartBadge: {
     position: 'absolute',

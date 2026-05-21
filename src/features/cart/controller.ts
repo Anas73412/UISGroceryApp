@@ -8,9 +8,11 @@ import AddressRepository from '../../data/repositories/AddressRepository';
 import { use } from 'react';
 import { sessionStore } from '../../store/sessionStore';
 import ConfigRepository from '../../data/repositories/ConfigRepository';
-import { CONFIG_KEYS } from '../../utils/constants';
+import { CONFIG_KEYS, FAILED, SUCCESS } from '../../utils/constants';
 import { addressController } from '../address/controller';
 import { DeliveryChargesModel } from '../../data/models/DeliveryChargesModel';
+import { splashService } from '../splash/service';
+import axios from 'axios';
 
 export const cartController = {
   async fetchUserCart(): Promise<ApiResponseModel<CartProductModel[]>> {
@@ -42,7 +44,6 @@ export const cartController = {
       const smartCartCharge = await ConfigRepository.getConfigByKeyFromDB(
         CONFIG_KEYS.SMALL_CART_MIN_AMOUNT,
       );
-      console.log('Fetched smart cart charge from DB:', smartCartCharge);
       return smartCartCharge?.configValue
         ? parseFloat(smartCartCharge.configValue)
         : 0;
@@ -87,6 +88,40 @@ export const cartController = {
       return charge;
     } catch (error) {
       return null;
+    }
+  },
+
+  async loadAppConfig() {
+    try {
+      const configList = await ConfigRepository.getConfigsFromDB();
+      if (configList.length <= 0) {
+        const res = await splashService.fetchAppConfig();
+
+        if (res.status === SUCCESS && res.data && Array.isArray(res.data)) {
+          await ConfigRepository.saveAllConfigs(res.data);
+          return res;
+        } else {
+          return {
+            status: FAILED,
+            message: res.message || 'Failed to load app configuration',
+          };
+        }
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log('Axios error details:', {
+          message: error.message,
+          code: error.code,
+          url: error.config?.url,
+        });
+      } else {
+        console.log('Non-axios error:', error);
+      }
+
+      return {
+        status: FAILED,
+        message: (error as Error).message || 'Failed to load app configuration',
+      };
     }
   },
 };
