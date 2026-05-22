@@ -11,7 +11,7 @@ import { DeliveryChargesModel } from '../data/models/DeliveryChargesModel';
 
 const adapter = new SQLiteAdapter({
   schema,
-  // migrations,
+  migrations,
   dbName: DATABASE_NAME,
 });
 

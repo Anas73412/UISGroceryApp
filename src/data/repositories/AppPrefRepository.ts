@@ -6,6 +6,9 @@ type AppPrefs = {
   lattitude: number | null;
   longitude: number | null;
   permissionsRequested: boolean;
+  cachedUserId: number;
+  activeOrderKey: string | null;
+  activeOrderId: number;
 };
 
 export const appPrefs = new GenericPrefRepository<AppPrefs>(APP_UIS_PREFS, {
@@ -13,4 +16,7 @@ export const appPrefs = new GenericPrefRepository<AppPrefs>(APP_UIS_PREFS, {
   lattitude: null,
   longitude: null,
   permissionsRequested: false,
+  cachedUserId: 0,
+  activeOrderKey: null,
+  activeOrderId: 0,
 });

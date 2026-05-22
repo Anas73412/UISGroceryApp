@@ -30,6 +30,7 @@ import {
 import { appPrefs } from '../../data/repositories/AppPrefRepository';
 import AuthRepository from '../../data/repositories/AuthRepository';
 import { sessionStore } from '../../store/sessionStore';
+import { clearAllSessionData } from '../../services/sessionLifecycle';
 
 type PermissionsScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Permissions'>;
@@ -127,14 +128,20 @@ export function PermissionsScreen({ navigation }: PermissionsScreenProps) {
     setRouting(true);
     try {
       await appPrefs.set('permissionsRequested', true);
+
       const isLoggedIn = await AuthRepository.isLoggedIn();
       if (isLoggedIn) {
-        await sessionStore.getState().loadSession();
-        navigation.replace('Main');
-      } else {
-        navigation.replace('Auth');
+        const restored = await sessionStore.getState().loadSession();
+        if (restored) {
+          navigation.replace('Main');
+          return;
+        }
+        await clearAllSessionData();
       }
+
+      navigation.replace('Auth');
     } catch (err) {
+      console.log('Permissions routing error', err);
       navigation.replace('Auth');
     } finally {
       setRouting(false);

@@ -1,7 +1,7 @@
-import { use } from 'react';
 import CartRepository from '../../data/repositories/CartRepository';
 import { sessionStore } from '../../store/sessionStore';
 import { FAILED, SUCCESS } from '../../utils/constants';
+import { mergeCartQuantitiesIntoProducts } from '../../utils/cartQuantityMerge';
 import { productService } from './service';
 
 export const productController = {
@@ -22,20 +22,14 @@ export const productController = {
 
         const cartArr = await CartRepository.getUserCartDetails(userId);
 
-        const cartMap = new Map(
-          cartArr.map(c => [
-            c.productId,
-            { quantity: c.quantity, cartId: c.cartId },
-          ]),
+        mergeCartQuantitiesIntoProducts(
+          res?.data?.products ?? [],
+          cartArr.map(c => ({
+            productId: c.productId,
+            quantity: c.quantity,
+            cartId: c.cartId,
+          })),
         );
-
-        if (cartArr.length > 0) {
-          for (const item of res?.data?.products ?? []) {
-            const cartInfo = cartMap.get(item.productId ?? 0);
-            item.cartQuantity = cartInfo?.quantity ?? 0;
-            item.cartId = cartInfo?.cartId ?? 0;
-          }
-        }
         console.log('ProductRes', res);
         return res;
       }

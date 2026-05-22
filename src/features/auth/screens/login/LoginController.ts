@@ -3,6 +3,7 @@ import { FAILED, SUCCESS } from '../../../../utils/constants';
 import { loginService } from './service';
 import UserRepository from '../../../../data/repositories/UserRepository';
 import AuthRepository from '../../../../data/repositories/AuthRepository';
+import { appPrefs } from '../../../../data/repositories/AppPrefRepository';
 import { sessionStore } from '../../../../store/sessionStore';
 
 export const LoginController = {
@@ -13,6 +14,7 @@ export const LoginController = {
       if (res.status === SUCCESS && res.data) {
         await UserRepository.saveUserInDB(res.data);
         await AuthRepository.saveToken(res.data.mobile, res.data.password);
+        await appPrefs.set('cachedUserId', res.data.id ?? 0);
         const user = await UserRepository.getCurrentUser();
         sessionStore.getState().setSession(user, res.data.password);
         return res;

@@ -31,6 +31,8 @@ import { appPrefs } from '../../data/repositories/AppPrefRepository';
 import { toSafeNumber } from '../../utils/utils';
 import { DeliveryChargesModel } from '../../data/models/DeliveryChargesModel';
 import { useLoading } from '../../components/context/LoadingContext';
+import { paymentService } from './paymentService';
+import { paymentErrorHandler } from './paymentErrorHandler';
 
 type Line = CartResponseModel & { product?: ProductModel };
 
@@ -106,6 +108,7 @@ export function CartScreen() {
   const { showErrorDialog, showSuccessDialog } = useMessageDialog();
   const [cartLines, setCartLines] = useState<Line[]>([]);
   const [listLoading, setListLoading] = useState(true);
+  const [cartError, setCartError] = useState<string | null>(null);
   const [isAddressResolving, setIsAddressResolving] = useState(false);
   const [addressList, setAddressList] = useState<AddressResponseModel[]>([]);
   const [deliveryRate, setDeliveryRate] = useState<DeliveryChargesModel | null>(
@@ -139,19 +142,109 @@ export function CartScreen() {
     }, [addressList]),
   );
 
-  const handleCheckout = () => {
-    console.log('SelectedAddress', selectedAddressId);
+  const handleCheckout = async () => {
     if (selectedAddressId <= 0) {
-      showErrorDialog('Delivary Address', 'Please select delivery address');
+      showErrorDialog('Delivery Address', 'Please select delivery address');
       return;
     }
-    const amount = (
+
+    const totalAmount =
       subtotal +
       (deliveryRate?.amount ?? 0) +
-      (subtotal < smallCartMinCharge ? smallCartAmount : 0)
-    ).toFixed(2);
+      (subtotal < smallCartMinCharge ? smallCartAmount : 0);
 
-    showSuccessDialog('Cart Checkout', 'Total Checkout Amount  ' + amount);
+    if (totalAmount < 1) {
+      showErrorDialog(
+        'Invalid Amount',
+        'Order total must be at least ₹1 to proceed with payment.',
+      );
+      return;
+    }
+
+    const gatewayError = await paymentService.ensureGatewayConfigured();
+    if (gatewayError) {
+      showErrorDialog('Payment Unavailable', gatewayError);
+      return;
+    }
+
+    let paymentAttempts = 0;
+    const maxRetries = 2;
+
+    const executePayment = async () => {
+      try {
+        show('Initiating payment...');
+
+        const userDetails = await paymentService.getUserDetailsForPayment();
+
+        // When your API creates a Razorpay order, pass orderId from the response.
+        // Do not send a client-made order_id — Razorpay shows "Something went wrong".
+        const paymentResponse = await paymentService.initiatePayment({
+          amount: totalAmount,
+          email: userDetails.email,
+          phone: userDetails.phone,
+          userName: userDetails.userName,
+          description: `Order for ${totalQty} items`,
+        });
+
+        hide();
+
+        // Payment successful!
+        showSuccessDialog(
+          'Payment Successful',
+          `Payment ID: ${
+            paymentResponse.razorpay_payment_id
+          }\n\nTotal Amount: ₹${totalAmount.toFixed(2)}`,
+        );
+
+        // TODO: In production, verify payment with backend:
+        // await fetch('/api/verify-payment', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify(paymentResponse)
+        // });
+
+        // Clear cart and navigate to home
+        setTimeout(() => {
+          cartController.clearCart();
+          navigation.navigate('HomeTab');
+        }, 2000);
+      } catch (error: any) {
+        hide();
+        console.error('Payment error:', error);
+
+        // Map error using error handler
+        const mappedError = paymentErrorHandler.mapError(error);
+        paymentErrorHandler.logError(mappedError);
+
+        // Check if error is retryable and we haven't exceeded max retries
+        if (
+          paymentErrorHandler.isRetryable(mappedError.code) &&
+          paymentAttempts < maxRetries
+        ) {
+          paymentAttempts++;
+          console.log(
+            `Retrying payment attempt ${paymentAttempts}/${maxRetries}`,
+          );
+
+          // Show retry dialog
+          showErrorDialog(
+            'Payment Error',
+            mappedError.message + '\n\nWould you like to retry?',
+          );
+
+          // Auto-retry after user acknowledges
+          setTimeout(executePayment, 1500);
+        } else {
+          // Non-retryable error or max retries exceeded
+          const errorTitle = paymentErrorHandler.getErrorTitle(
+            mappedError.code,
+          );
+          showErrorDialog(errorTitle, mappedError.message);
+        }
+      }
+    };
+
+    executePayment();
   };
 
   const updateAddressUI = useCallback(async () => {
@@ -210,12 +303,27 @@ export function CartScreen() {
       let cancelled = false;
       (async () => {
         setListLoading(true);
+        setCartError(null);
         try {
           await cartController.loadAppConfig();
           const next = await fetchCartLinesFromApi();
           if (!cancelled) {
-            setCartLines(next);
-            await cartStore.getState().loadFromDB();
+            if (!next || next.length === 0) {
+              // Check if this is an error or just an empty cart
+              const res = await cartController.fetchUserCart();
+              if (res.status !== SUCCESS) {
+                setCartError(
+                  res.message || 'Failed to load cart. Please try again.',
+                );
+                console.error('[CartScreen] Cart API error:', res);
+              } else {
+                setCartLines(next);
+                await cartStore.getState().loadFromDB();
+              }
+            } else {
+              setCartLines(next);
+              await cartStore.getState().loadFromDB();
+            }
           }
           const addressListFromDB = await cartController.getAddressListFromDB();
           setAddressList(addressListFromDB);
@@ -225,6 +333,15 @@ export function CartScreen() {
           const smallCartAmountFromDB =
             await cartController.getSmallCartAmount();
           setSmallCartAmount(smallCartAmountFromDB);
+        } catch (error) {
+          if (!cancelled) {
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : 'Failed to load cart. Please check your connection.';
+            setCartError(errorMessage);
+            console.error('[CartScreen] Error loading cart:', error);
+          }
         } finally {
           if (!cancelled) setListLoading(false);
         }
@@ -365,6 +482,27 @@ export function CartScreen() {
     );
   };
 
+  const handleRetryCart = useCallback(async () => {
+    setListLoading(true);
+    setCartError(null);
+    try {
+      await cartController.loadAppConfig();
+      const next = await fetchCartLinesFromApi();
+      setCartLines(next);
+      await cartStore.getState().loadFromDB();
+
+      const addressListFromDB = await cartController.getAddressListFromDB();
+      setAddressList(addressListFromDB);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to load cart';
+      setCartError(errorMessage);
+      console.error('[CartScreen] Error retrying cart:', error);
+    } finally {
+      setListLoading(false);
+    }
+  }, []);
+
   const AddressHeader = (
     <View style={styles.addressCard}>
       <View style={styles.addressIconCircle}>
@@ -405,7 +543,25 @@ export function CartScreen() {
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={<>{AddressHeader}</>}
         ListEmptyComponent={
-          listLoading ? (
+          cartError ? (
+            <View style={styles.errorContainer}>
+              <MaterialIcons
+                name="error-outline"
+                size={48}
+                color={theme.colors.error || '#d32f2f'}
+              />
+              <Text style={styles.errorText}>{cartError}</Text>
+              <Pressable style={styles.retryBtn} onPress={handleRetryCart}>
+                <MaterialIcons
+                  name="refresh"
+                  size={18}
+                  color="white"
+                  style={{ marginRight: 8 }}
+                />
+                <Text style={styles.retryText}>Retry</Text>
+              </Pressable>
+            </View>
+          ) : listLoading ? (
             <View style={styles.hydratingFooter}>
               <ActivityIndicator color={theme.colors.primary} />
             </View>
@@ -415,7 +571,7 @@ export function CartScreen() {
         }
       />
 
-      {!listLoading && cartLines.length > 0 ? (
+      {!listLoading && !cartError && cartLines.length > 0 ? (
         <View style={styles.footer}>
           <View style={styles.divider} />
           <View style={styles.summaryRow}>

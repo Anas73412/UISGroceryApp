@@ -2,6 +2,7 @@ import { CartResponseModel } from '../../data/models/CartModel';
 import CartRepository from '../../data/repositories/CartRepository';
 import { sessionStore } from '../../store/sessionStore';
 import { FAILED, SUCCESS } from '../../utils/constants';
+import { mergeCartQuantitiesIntoProducts } from '../../utils/cartQuantityMerge';
 import { homeService } from './service';
 
 export const homeController = {
@@ -59,19 +60,14 @@ export const homeController = {
       if (res.status === SUCCESS) {
         const userId = sessionStore.getState().user?.uid ?? 0;
         const cartArr = await CartRepository.getUserCartDetails(userId);
-        const cartMap = new Map(
-          cartArr.map(c => [
-            c.productId,
-            { quantity: c.quantity, cartId: c.cartId },
-          ]),
+        mergeCartQuantitiesIntoProducts(
+          res?.data?.products ?? [],
+          cartArr.map(c => ({
+            productId: c.productId,
+            quantity: c.quantity,
+            cartId: c.cartId,
+          })),
         );
-        if (cartArr.length > 0) {
-          for (const item of res?.data?.products ?? []) {
-            const cartInfo = cartMap.get(item.productId ?? 0);
-            item.cartQuantity = cartInfo?.quantity ?? 0;
-            item.cartId = cartInfo?.cartId ?? 0;
-          }
-        }
         return res;
       }
       return {

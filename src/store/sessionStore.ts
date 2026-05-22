@@ -2,45 +2,70 @@ import { create } from 'zustand';
 import type { UserModel } from '../data/models/UserModel';
 import AuthRepository from '../data/repositories/AuthRepository';
 import UserRepository from '../data/repositories/UserRepository';
+import { appPrefs } from '../data/repositories/AppPrefRepository';
+import { profileService } from '../features/profile/service';
+import { SUCCESS } from '../utils/constants';
 
 interface SessionStore {
   user: UserModel | null;
   token: string | null;
   isLoaded: boolean;
-  loadSession: () => Promise<void>;
+  loadSession: () => Promise<boolean>;
   setSession: (user: UserModel | null, token: string | null) => void;
   clearSession: () => void;
 }
 
-export const sessionStore = create<SessionStore>((set) => ({
+export const sessionStore = create<SessionStore>(set => ({
   user: null,
   token: null,
   isLoaded: false,
 
   loadSession: async () => {
     try {
-      const [credentials, user] = await Promise.all([
-        AuthRepository.getCredentials(),
-        UserRepository.getCurrentUser(),
-      ]);
+      const credentials = await AuthRepository.getCredentials();
+      if (!credentials?.token) {
+        set({ user: null, token: null, isLoaded: true });
+        return false;
+      }
 
-      if (credentials && user) {
+      let user = await UserRepository.getCurrentUser();
+
+      if (!user) {
+        const cachedUserId = await appPrefs.get('cachedUserId');
+        if (cachedUserId > 0) {
+          const res = await profileService.getUserDetails(cachedUserId);
+          if (res.status === SUCCESS && res.data) {
+            await UserRepository.saveUserInDB(res.data);
+            user = await UserRepository.getCurrentUser();
+          }
+        }
+      }
+
+      if (user) {
         set({
           user,
           token: credentials.token,
           isLoaded: true,
         });
-      } else {
-        set({ user: null, token: null, isLoaded: true });
+        return true;
       }
-    } catch {
+
       set({ user: null, token: null, isLoaded: true });
+      return false;
+    } catch (error) {
+      console.error('loadSession failed:', error);
+      set({ user: null, token: null, isLoaded: true });
+      return false;
     }
   },
 
-  setSession: (user, token) =>
-    set({ user, token, isLoaded: true }),
+  setSession: (user, token) => {
+    if (user?.uid) {
+      void appPrefs.set('cachedUserId', user.uid);
+    }
+    set({ user, token, isLoaded: true });
+  },
 
   clearSession: () =>
-    set({ user: null, token: null }),
+    set({ user: null, token: null, isLoaded: true }),
 }));

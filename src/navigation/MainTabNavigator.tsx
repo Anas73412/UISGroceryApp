@@ -22,6 +22,7 @@ const HIDE_TAB_BAR_ROUTES = [
   'NewProductRequest',
   'Order',
   'OrderDetail',
+  'OrderTracking',
 ];
 export function MainTabNavigator() {
   return (

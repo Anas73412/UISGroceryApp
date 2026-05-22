@@ -3,19 +3,36 @@
  * @format
  */
 
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { StatusBar, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  type NavigationState,
+} from '@react-navigation/native';
+import { SessionRehydrator } from './components/SessionRehydrator';
 import { RootNavigator } from './navigation/RootNavigator';
 import { theme } from './theme';
 import { MessageDialogProvider } from './components/context/MessageDialogContext';
 import { LoadingProvider } from './components/context/LoadingContext';
 import { ConfirmationDialogProvider } from './components/context/ConfirmationDialogContext';
+import { OrderTrackingProvider } from './components/context/OrderTrackingContext';
+import { OrderTrackingSnackBar } from './components/ui/OrderTrackingSnackBar';
+import { OrderTrackingBootstrap } from './components/OrderTrackingBootstrap';
+import { navigationRef } from './navigation/navigationRef';
+import { getFocusedRouteName } from './navigation/getFocusedRouteName';
 import Toast, { BaseToast } from 'react-native-toast-message';
 
 function App() {
+  const [focusedRouteName, setFocusedRouteName] = useState('');
   const isDarkMode = useColorScheme() === 'dark';
+
+  const onNavigationStateChange = useCallback(
+    (state: NavigationState | undefined) => {
+      setFocusedRouteName(getFocusedRouteName(state));
+    },
+    [],
+  );
   // Light theme for development; dark theme commented in src/theme/colors.ts
   const barStyle = isDarkMode ? 'light-content' : 'dark-content';
 
@@ -25,12 +42,27 @@ function App() {
         <LoadingProvider>
           <MessageDialogProvider>
             <ConfirmationDialogProvider>
-              <NavigationContainer>
-                <StatusBar
-                  barStyle={barStyle}
-                  backgroundColor={theme.colors.background}
-                />
-                <RootNavigator />
+              <NavigationContainer
+                ref={navigationRef}
+                onReady={() => {
+                  setFocusedRouteName(
+                    getFocusedRouteName(navigationRef.getRootState()),
+                  );
+                }}
+                onStateChange={onNavigationStateChange}
+              >
+                <OrderTrackingProvider focusedRouteName={focusedRouteName}>
+                  <SessionRehydrator>
+                    <OrderTrackingBootstrap>
+                      <StatusBar
+                        barStyle={barStyle}
+                        backgroundColor={theme.colors.background}
+                      />
+                      <RootNavigator />
+                      <OrderTrackingSnackBar />
+                    </OrderTrackingBootstrap>
+                  </SessionRehydrator>
+                </OrderTrackingProvider>
               </NavigationContainer>
             </ConfirmationDialogProvider>
           </MessageDialogProvider>

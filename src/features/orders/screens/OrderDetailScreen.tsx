@@ -9,27 +9,15 @@ import type { OrderModel } from '../../../data/models/OrderModel';
 import type { OrderItemModel } from '../../../data/models/OrderItemModel';
 import { IMAGE_BASE_URL, RUPEE_SIGN } from '../../../utils/constants';
 import { useMessageDialog } from '../../../components/context/MessageDialogContext';
+import { useOrderTracking } from '../../../components/context/OrderTrackingContext';
 import { theme } from '../../../theme';
 import styles from './OrderDetailScreen.Style';
+import {
+  getOrderDisplayKey,
+  getOrderUiStatus,
+} from '../orderStatus';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'OrderDetail'>;
-
-type OrderUiStatus = 'pending' | 'delivered' | 'cancelled';
-
-function getOrderUiStatus(order: OrderModel): OrderUiStatus {
-  if (order.reason?.trim()) return 'cancelled';
-  const s = order.status;
-  if (s === 4) return 'cancelled';
-  if (s === 3) return 'delivered';
-  return 'pending';
-}
-
-function getOrderDisplayKey(order: OrderModel): string {
-  return (
-    order.orderKey?.trim() ||
-    String(order.orderId ?? order.razorpayPaymentId ?? '')
-  );
-}
 
 function getItemImageUri(item: OrderItemModel): string {
   const raw = item.productImage?.trim() ?? '';
@@ -52,14 +40,16 @@ function computeSavings(items: OrderItemModel[]): number {
 function OrderDetailScreen({ route, navigation }: Props) {
   const { order } = route.params;
   const { showErrorDialog } = useMessageDialog();
+  const { startTracking } = useOrderTracking();
   const uiStatus = getOrderUiStatus(order);
   const displayKey = getOrderDisplayKey(order);
   const items = order.orderItemsList ?? [];
   const savings = computeSavings(items);
 
-  const onTrack = () => {
+  const onTrack = async () => {
     if (uiStatus === 'pending') {
-      showErrorDialog('Track order', 'Tracking will be available soon.');
+      await startTracking(order);
+      navigation.navigate('OrderTracking', { order });
       return;
     }
     showErrorDialog('Track order', 'This order has been completed.');

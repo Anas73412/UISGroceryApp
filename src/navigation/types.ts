@@ -11,8 +11,8 @@ import type { OrderModel } from '../data/models/OrderModel';
 export type RootStackParamList = {
   Splash: undefined;
   Permissions: undefined;
-  Auth: undefined;
-  Main: undefined;
+  Auth: NavigatorScreenParams<AuthStackParamList> | undefined;
+  Main: NavigatorScreenParams<MainTabParamList> | undefined;
 };
 
 export type MainTabParamList = {
@@ -56,6 +56,7 @@ export type SettingsStackParamList = {
   DeliveryAddress: undefined;
   Order: undefined;
   OrderDetail: { order: OrderModel };
+  OrderTracking: { order: OrderModel };
   MyProductRequest: undefined;
   NewProductRequest: undefined;
   AddAddress: AddAddressRouteParams;

@@ -215,6 +215,33 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing[2],
     alignItems: 'center',
   },
+  errorContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: theme.spacing[8],
+    paddingHorizontal: theme.spacing[4],
+  },
+  errorText: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.gray600,
+    marginTop: theme.spacing[2],
+    marginBottom: theme.spacing[4],
+    textAlign: 'center',
+  },
+  retryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: theme.spacing[4],
+    paddingVertical: theme.spacing[2],
+    borderRadius: theme.borderRadius.md,
+  },
+  retryText: {
+    color: theme.colors.textOnPrimary,
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: '600',
+  },
 });
 
 export default styles;

@@ -18,10 +18,14 @@ import { useLoading } from '../../../components/context/LoadingContext';
 import { useMessageDialog } from '../../../components/context/MessageDialogContext';
 import styles from './OrderScreen.Style';
 import { OrderController } from '../controller';
+import { useOrderTracking } from '../../../components/context/OrderTrackingContext';
+import {
+  getOrderDisplayKey,
+  getOrderUiStatus,
+  type OrderUiStatus,
+} from '../orderStatus';
 
 type OrderTab = 'all' | 'pending' | 'completed' | 'cancelled';
-
-type OrderUiStatus = 'pending' | 'delivered' | 'cancelled';
 
 const TAB_ITEMS: { key: OrderTab; label: string }[] = [
   { key: 'all', label: 'All Orders' },
@@ -53,15 +57,6 @@ const STATUS_BADGE: Record<
 
 const MAX_THUMBS = 3;
 
-/** Map API numeric status to UI; adjust when backend contract is known. */
-function getOrderUiStatus(order: OrderModel): OrderUiStatus {
-  if (order.reason?.trim()) return 'cancelled';
-  const s = order.status;
-  if (s === 4) return 'cancelled';
-  if (s === 3) return 'delivered';
-  return 'pending';
-}
-
 function formatOrderDate(milliseconds: string | number): string {
   const d = new Date(Number(milliseconds));
 
@@ -92,13 +87,6 @@ function formatOrderDate(milliseconds: string | number): string {
 
   return `${dateStr}, ${timeStr}`;
 }
-function getOrderDisplayKey(order: OrderModel): string {
-  return (
-    order.orderKey?.trim() ||
-    String(order.orderId ?? order.razorpayPaymentId ?? '')
-  );
-}
-
 function getItemImageUri(item: OrderItemModel): string {
   const raw = item.productImage?.trim() ?? '';
   if (!raw) return '';
@@ -134,6 +122,7 @@ const OrderScreen = () => {
     useNavigation<NativeStackNavigationProp<SettingsStackParamList>>();
   const { show, hide } = useLoading();
   const { showErrorDialog } = useMessageDialog();
+  const { startTracking } = useOrderTracking();
   const [tab, setTab] = useState<OrderTab>('all');
   const [orders, setOrders] = useState<OrderModel[]>([]);
 
@@ -166,9 +155,10 @@ const OrderScreen = () => {
 
   const filtered = useMemo(() => filterOrdersByTab(orders, tab), [orders, tab]);
 
-  const onPrimaryAction = (order: OrderModel) => {
+  const onPrimaryAction = async (order: OrderModel) => {
     if (getOrderUiStatus(order) === 'pending') {
-      showErrorDialog('Track order', 'Tracking will be available soon.');
+      await startTracking(order);
+      navigation.navigate('OrderTracking', { order });
       return;
     }
     showErrorDialog('Reorder', 'Reorder will be available soon.');

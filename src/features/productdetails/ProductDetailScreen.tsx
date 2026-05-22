@@ -8,18 +8,25 @@ import {
   Pressable,
   FlatList,
 } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import {
+  useNavigation,
+  useRoute,
+  RouteProp,
+  useFocusEffect,
+} from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../theme';
 import { IMAGE_BASE_URL, RUPEE_SIGN } from '../../utils/constants';
 import { QuantitySelector } from '../../components/ui/QuantitySelector';
 import { ProductCard } from '../home/components/ProductCard';
 import { AppHeader } from '../../components/ui';
+import { BannerSlider } from '../../components/ui/BannerSlider/BannerSlider';
 import Toast from 'react-native-toast-message';
 import styles from './ProductDetailScreen.Style';
 import { HomeStackParamList } from '../../navigation/types';
 import { ProductModel } from '../../data/models/ProductModel';
 import { CartResponseModel } from '../../data/models/CartModel';
+import { SliderModel } from '../../data/models/SliderModel';
 import { sessionStore } from '../../store/sessionStore';
 import { cartStore } from '../../store/cartStore';
 import { homeController } from '../home/controller';
@@ -35,15 +42,18 @@ type ProductDetailRouteProp = RouteProp<
 export function ProductDetailScreen() {
   const route = useRoute<ProductDetailRouteProp>();
   const navigation = useNavigation();
-  const { product } = route.params;
+  const { product: routeProduct } = route.params;
 
-  const [cartQuantity, setCartQuantity] = useState(product.cartQuantity ?? 0);
-  const [isImageLoading, setIsImageLoading] = useState(!!product.productImage);
+  const [product, setProduct] = useState(routeProduct);
+  const [cartQuantity, setCartQuantity] = useState(routeProduct.cartQuantity ?? 0);
+  const [isImageLoading, setIsImageLoading] = useState(!!routeProduct.productImage);
   const [relatedProducts, setRelatedProducts] = useState<ProductModel[]>([]);
+  const [sliders, setSliders] = useState<SliderModel[]>([]);
   const [cartQuantities, setCartQuantities] = useState<Record<number, number>>(
     {},
   );
-  const { showErrorDialog, showSuccessDialog } = useMessageDialog();
+  const { showErrorDialog } = useMessageDialog();
+
   const price = product.sellingPrice ?? product.price ?? 0;
   const discount = product.discount ?? 0;
   const originalPrice =
@@ -57,7 +67,7 @@ export function ProductDetailScreen() {
 
   const buildCartModel = useCallback(
     async (prod: ProductModel, qty: number): Promise<CartResponseModel> => {
-      const userId = await sessionStore.getState().user?.uid;
+      const userId = sessionStore.getState().user?.uid;
       const pCartId =
         (await cartStore.getState().getCartId(prod.productId ?? 0)) ?? 0;
       return {
@@ -74,22 +84,59 @@ export function ProductDetailScreen() {
     [],
   );
 
-  useEffect(() => {
-    loadRelatedProducts();
-  }, [product.categoryId]);
+  const refreshCartQuantity = useCallback(async () => {
+    await cartStore.getState().loadFromDB();
+    const items = cartStore.getState().items;
+    const item = items.find(c => c.productId === product.productId);
+    const qty = item?.quantity ?? 0;
+    setCartQuantity(qty);
+    setProduct(prev => ({ ...prev, cartQuantity: qty }));
 
-  useEffect(() => {
-    const loadCartQty = async () => {
-      await cartStore.getState().loadFromDB();
-      const items = cartStore.getState().items;
-      const item = items.find(c => c.productId === product.productId);
-      setCartQuantity(item?.quantity ?? 0);
-    };
-    loadCartQty();
+    const qtyMap: Record<number, number> = {};
+    for (const row of items) {
+      const id = row.productId ?? 0;
+      if (id > 0) {
+        qtyMap[id] = row.quantity ?? 0;
+      }
+    }
+    setCartQuantities(qtyMap);
+    setRelatedProducts(prev =>
+      prev.map(p => ({
+        ...p,
+        cartQuantity: qtyMap[p.productId ?? 0] ?? 0,
+      })),
+    );
   }, [product.productId]);
 
+  useEffect(() => {
+    setProduct(routeProduct);
+    setCartQuantity(routeProduct.cartQuantity ?? 0);
+  }, [routeProduct]);
+
+  useEffect(() => {
+    loadSliders();
+    loadRelatedProducts();
+  }, [product.categoryId, product.productId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshCartQuantity();
+    }, [refreshCartQuantity]),
+  );
+
+  const loadSliders = async () => {
+    try {
+      const res = await homeController.fetchSliders();
+      setSliders(extractDataArray<SliderModel>(res.data));
+    } catch {
+      setSliders([]);
+    }
+  };
+
   const loadRelatedProducts = async () => {
-    if (!product.categoryId) return;
+    if (!product.categoryId) {
+      return;
+    }
     try {
       const res = await homeController.fetchNewlyAddedProducts(
         product.categoryId,
@@ -101,6 +148,14 @@ export function ProductDetailScreen() {
         .filter(p => p.productId !== product.productId)
         .slice(0, 6);
       setRelatedProducts(filtered);
+      const qtyMap: Record<number, number> = {};
+      for (const p of filtered) {
+        const id = p.productId ?? 0;
+        if (id > 0) {
+          qtyMap[id] = p.cartQuantity ?? 0;
+        }
+      }
+      setCartQuantities(prev => ({ ...prev, ...qtyMap }));
     } catch {
       setRelatedProducts([]);
     }
@@ -111,7 +166,7 @@ export function ProductDetailScreen() {
     const res = await cartSyncService.addOrUpdate(cartModel, 1);
     if (res.status) {
       Toast.show({ type: 'success', text1: res.message });
-      await cartStore.getState().loadFromDB();
+      await refreshCartQuantity();
       setCartQuantity(1);
     } else {
       showErrorDialog('Add to Cart', res.message ?? 'Failed to add');
@@ -123,9 +178,38 @@ export function ProductDetailScreen() {
     const cartModel = await buildCartModel(product, newQty);
     const res = await cartSyncService.addOrUpdate(cartModel, newQty);
     if (res.status) {
-      await cartStore.getState().loadFromDB();
+      await refreshCartQuantity();
       setCartQuantity(newQty);
+    } else {
+      showErrorDialog('Cart', res.message ?? 'Could not update quantity');
     }
+  };
+
+  const handleQuantityDecrement = async () => {
+    const newQty = Math.max(0, cartQuantity - 1);
+    if (newQty === 0) {
+      const cartId = await cartStore
+        .getState()
+        .getCartId(product.productId ?? 0);
+      const res = await cartSyncService.removeCartProduct(
+        cartId,
+        product.productId ?? 0,
+      );
+      if (!res.status) {
+        showErrorDialog('Cart', res.message ?? 'Could not remove item');
+        return;
+      }
+      Toast.show({ type: 'success', text1: res.message ?? 'Removed from cart' });
+    } else {
+      const cartModel = await buildCartModel(product, newQty);
+      const res = await cartSyncService.addOrUpdate(cartModel, newQty);
+      if (!res.status) {
+        showErrorDialog('Cart', res.message ?? 'Could not update quantity');
+        return;
+      }
+    }
+    await refreshCartQuantity();
+    setCartQuantity(newQty);
   };
 
   const handleGoToCart = () => {
@@ -134,11 +218,22 @@ export function ProductDetailScreen() {
 
   const handleRelatedQuantityChange = useCallback(
     (p: ProductModel, qty: number) => {
-      if (p.productId != null) {
-        setCartQuantities(prev => ({ ...prev, [p.productId!]: qty }));
+      const id = p.productId;
+      if (id == null) {
+        return;
+      }
+      setCartQuantities(prev => ({ ...prev, [id]: qty }));
+      setRelatedProducts(prev =>
+        prev.map(item =>
+          item.productId === id ? { ...item, cartQuantity: qty } : item,
+        ),
+      );
+      if (id === product.productId) {
+        setCartQuantity(qty);
+        setProduct(prev => ({ ...prev, cartQuantity: qty }));
       }
     },
-    [],
+    [product.productId],
   );
 
   const hasDescription = !!product.description?.trim();
@@ -153,7 +248,8 @@ export function ProductDetailScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Product Image */}
+        <BannerSlider sliders={sliders} />
+
         <View style={styles.imageContainer}>
           {imageUri ? (
             <>
@@ -178,7 +274,6 @@ export function ProductDetailScreen() {
           )}
         </View>
 
-        {/* Product Info Card */}
         <View style={styles.infoCard}>
           <Text style={styles.category}>
             {product.categoryName?.toUpperCase() ?? 'PRODUCT'}
@@ -214,7 +309,6 @@ export function ProductDetailScreen() {
             </>
           )}
 
-          {/* Related Products */}
           {relatedProducts.length > 0 && (
             <>
               <Text style={styles.relatedTitle}>Related Products</Text>
@@ -239,11 +333,12 @@ export function ProductDetailScreen() {
                         product={productWithQty}
                         discountPercent={item.discount}
                         categoryLabel={item.categoryName}
-                        // onPress={p =>
-                        //   navigation.navigate('ProductDetailScreen', {
-                        //     product: p as ProductModel,
-                        //   })
-                        // }
+                        onPress={p =>
+                          navigation.navigate('ProductDetailScreen', {
+                            product: p as ProductModel,
+                          })
+                        }
+                        onAddToCart={() => {}}
                         onQuantityChange={handleRelatedQuantityChange}
                       />
                     </View>
@@ -255,31 +350,13 @@ export function ProductDetailScreen() {
         </View>
       </ScrollView>
 
-      {/* Bottom Bar */}
       <View style={styles.bottomBar}>
         {showQuantitySelector ? (
           <View style={styles.quantitySelectorWrapper}>
             <QuantitySelector
               quantity={cartQuantity}
               onIncrement={handleQuantityIncrement}
-              onDecrement={async () => {
-                const newQty = Math.max(0, cartQuantity - 1);
-                if (newQty === 0) {
-                  const cartId = await cartStore
-                    .getState()
-                    .getCartId(product.productId ?? 0);
-                  await cartSyncService.removeCartProduct(
-                    cartId,
-                    product.productId ?? 0,
-                  );
-                  Toast.show({ type: 'success', text1: 'Removed from cart' });
-                } else {
-                  const cartModel = await buildCartModel(product, newQty);
-                  await cartSyncService.addOrUpdate(cartModel, newQty);
-                }
-                await cartStore.getState().loadFromDB();
-                setCartQuantity(newQty);
-              }}
+              onDecrement={handleQuantityDecrement}
               min={0}
             />
           </View>

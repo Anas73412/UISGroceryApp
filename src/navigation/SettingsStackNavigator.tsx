@@ -8,6 +8,7 @@ import { AddressScreen } from '../features/address/AddressScreen';
 import { AddAddressScreen } from '../features/address/AddAddressScreen';
 import OrderScreen from '../features/orders/screens/OrderScreen';
 import OrderDetailScreen from '../features/orders/screens/OrderDetailScreen';
+import OrderTrackingScreen from '../features/orders/screens/OrderTrackingScreen';
 import { MyProductRequestScreen } from '../features/productrequests/MyProductRequestScreen';
 import { NewProductRequestScreen } from '../features/productrequests/NewProductRequestScreen';
 
@@ -23,6 +24,7 @@ export function SettingsStackNavigator() {
       <Stack.Screen name="AddAddress" component={AddAddressScreen} />
       <Stack.Screen name="Order" component={OrderScreen} />
       <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
+      <Stack.Screen name="OrderTracking" component={OrderTrackingScreen} />
       <Stack.Screen
         name="MyProductRequest"
         component={MyProductRequestScreen}

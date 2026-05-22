@@ -101,7 +101,7 @@ export function ProductCard({
       });
       await cartStore.getState().loadFromDB();
       setQuantity(newQty);
-      onQuantityChange?.({ ...product, quantity: newQty }, newQty);
+      onQuantityChange?.({ ...product, cartQuantity: newQty }, newQty);
     } else {
       showErrorDialog('Add Product in Cart', itemRes.message);
     }
@@ -110,12 +110,16 @@ export function ProductCard({
   const handleDecrement = async () => {
     const newQty = Math.max(0, quantity - 1);
     const cartModel = await convertProductToCartModel(product, newQty);
+
     if (newQty === 0) {
       const res = await cartSyncService.removeCartProduct(
         cartModel.cartId ?? 0,
         cartModel.productId ?? 0,
       );
       if (res.status) {
+        await cartStore.getState().loadFromDB();
+        setQuantity(0);
+        onQuantityChange?.({ ...product, cartQuantity: 0 }, 0);
         Toast.show({
           type: 'success',
           text1: res.message,
@@ -123,20 +127,20 @@ export function ProductCard({
       } else {
         showErrorDialog('Remove Product', res.message);
       }
+      return;
+    }
+
+    const itemRes = await cartSyncService.addOrUpdate(cartModel, newQty);
+    if (itemRes.status) {
+      await cartStore.getState().loadFromDB();
+      setQuantity(newQty);
+      onQuantityChange?.({ ...product, cartQuantity: newQty }, newQty);
+      Toast.show({
+        type: 'success',
+        text1: itemRes.message,
+      });
     } else {
-      const cartModel = await convertProductToCartModel(product, newQty ?? 1);
-      const itemRes = await cartSyncService.addOrUpdate(cartModel, newQty);
-      if (itemRes.status) {
-        Toast.show({
-          type: 'success',
-          text1: itemRes.message,
-        });
-        setQuantity(newQty);
-        await cartStore.getState().loadFromDB();
-        onQuantityChange?.({ ...product, cartQuantity: newQty }, newQty);
-      } else {
-        showErrorDialog('Update Product Quantity', itemRes.message);
-      }
+      showErrorDialog('Update Product Quantity', itemRes.message);
     }
   };
   const convertProductToCartModel = async (
@@ -174,7 +178,7 @@ export function ProductCard({
 
       await cartStore.getState().loadFromDB();
       setQuantity(1);
-      onQuantityChange?.({ ...product, quantity: 1 }, 1);
+      onQuantityChange?.({ ...product, cartQuantity: 1 }, 1);
       onAddToCart?.(product);
     } else {
       showErrorDialog('Update Product Quantity', itemRes.message);
