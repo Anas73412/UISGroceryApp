@@ -69,8 +69,21 @@ export function MainTabNavigator() {
         name="SettingsTab"
         component={SettingsStackNavigator}
         options={({ route }) => {
-          const routeName = getFocusedRouteNameFromRoute(route) ?? 'SettingsMain';
-          const shouldHideBottomBar = routeName === 'DeliveryAddress';
+          const routeName =
+            getFocusedRouteNameFromRoute(route) ?? 'SettingsMain';
+          const settingsHideRoutes = [
+            'DeliveryAddress',
+            'AddAddress',
+            'ContactUs',
+            'MyProductRequest',
+            'NewProductRequest',
+            'Order',
+            'OrderDetail',
+            'OrderTracking',
+            'MyComplaints',
+            'AddComplain',
+          ];
+          const shouldHideBottomBar = settingsHideRoutes.includes(routeName);
           return {
             title: 'Setting',
             tabBarStyle: { display: shouldHideBottomBar ? 'none' : 'flex' },

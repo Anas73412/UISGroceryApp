@@ -34,6 +34,8 @@ const HIDE_TAB_BAR_ROUTES = [
   'Order',
   'OrderDetail',
   'OrderTracking',
+  'MyComplaints',
+  'AddComplain',
 ];
 
 export function BottomTabBar({
@@ -68,7 +70,14 @@ export function BottomTabBar({
               canPreventDefault: true,
             });
 
-            if (!isFocused && !event.defaultPrevented) {
+            if (event.defaultPrevented) return;
+
+            if (tabRoute.name === 'SettingsTab') {
+              navigation.navigate('SettingsTab', { screen: 'SettingsMain' });
+              return;
+            }
+
+            if (!isFocused) {
               navigation.navigate(tabRoute.name);
             }
           };

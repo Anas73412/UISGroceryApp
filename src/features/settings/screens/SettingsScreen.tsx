@@ -32,6 +32,12 @@ type SettingOption = {
 
 const SETTING_OPTIONS: SettingOption[] = [
   {
+    id: 'complains',
+    icon: 'home',
+    iconBg: '#E8B86D',
+    label: 'Your Complains',
+  },
+  {
     id: 'delivery',
     icon: 'home',
     iconBg: '#E8B86D',
@@ -101,6 +107,9 @@ export function SettingsScreen() {
         break;
       case 'contact':
         navigation.navigate('ContactUs');
+        break;
+      case 'complains':
+        navigation.navigate('MyComplaints');
         break;
       case 'delivery':
         navigation.navigate('DeliveryAddress');

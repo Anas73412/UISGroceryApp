@@ -78,6 +78,8 @@ export type SettingsStackParamList = {
   OrderTracking: { order: OrderModel };
   MyProductRequest: undefined;
   NewProductRequest: undefined;
+  MyComplaints: undefined;
+  AddComplain: undefined;
   AddAddress: AddAddressRouteParams;
 };
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

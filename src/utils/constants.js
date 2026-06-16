@@ -34,6 +34,8 @@ export const API_ENDPOINTS = {
   NEW_PRODUCT_REQUEST:`${UPLOAD_BASE_URL}/addProductRequest`,
   SAVE_USER_ORDER: `${SUB_ORDER_PATH}/SaveOrder`,
   UPDATE_PAYMENT_STATUS: `${SUB_ORDER_PATH}/UpdatePaymentStatus`,
+  GET_ALL_COMPLAINS: `${SUB_PATH}/getAllComplains`,
+  ADD_COMPLAIN: `${SUB_PATH}/addComplain`,
 };
 
 export const { width: SCREEN_WIDTH } = Dimensions.get('window');

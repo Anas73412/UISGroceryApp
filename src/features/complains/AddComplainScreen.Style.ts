@@ -1,0 +1,218 @@
+import { StyleSheet } from 'react-native';
+import { theme } from '../../theme';
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.backgroundSecondary,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: theme.spacing[4],
+    paddingTop: theme.spacing[4],
+    paddingBottom: theme.spacing[4],
+  },
+  infoCard: {
+    alignItems: 'center',
+    backgroundColor: '#E8F6F8',
+    borderRadius: theme.borderRadius.lg,
+    borderWidth: 1,
+    borderColor: '#C5E8ED',
+    paddingHorizontal: theme.spacing[4],
+    paddingVertical: theme.spacing[5],
+    marginBottom: theme.spacing[5],
+  },
+  infoIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing[3],
+  },
+  infoTitle: {
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.secondary,
+    marginBottom: theme.spacing[2],
+    textAlign: 'center',
+  },
+  infoText: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.secondary,
+    lineHeight: 21,
+    textAlign: 'center',
+  },
+  fieldBlock: {
+    marginBottom: theme.spacing[4],
+  },
+  fieldLabel: {
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.gray700,
+    marginBottom: theme.spacing[2],
+  },
+  textInput: {
+    backgroundColor: theme.colors.gray100,
+    borderRadius: theme.borderRadius.lg,
+    paddingHorizontal: theme.spacing[4],
+    paddingVertical: theme.spacing[3],
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.black,
+  },
+  textArea: {
+    minHeight: 120,
+    textAlignVertical: 'top',
+    paddingTop: theme.spacing[3],
+  },
+  selectInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.gray100,
+    borderRadius: theme.borderRadius.lg,
+    paddingHorizontal: theme.spacing[4],
+    paddingVertical: theme.spacing[3],
+  },
+  selectText: {
+    flex: 1,
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.black,
+  },
+  selectPlaceholder: {
+    color: theme.colors.gray500,
+  },
+  fieldError: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.error,
+    marginTop: theme.spacing[1],
+  },
+  promoBanner: {
+    borderRadius: theme.borderRadius.lg,
+    backgroundColor: theme.colors.secondary,
+    padding: theme.spacing[4],
+    marginBottom: theme.spacing[4],
+    overflow: 'hidden',
+    minHeight: 140,
+  },
+  promoBannerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: theme.colors.primary,
+    opacity: 0.25,
+    borderRadius: theme.borderRadius.lg,
+  },
+  promoTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing[4],
+  },
+  promoIconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  promoBadge: {
+    width: 64,
+    height: 64,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  promoTitle: {
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.white,
+    marginBottom: theme.spacing[1],
+  },
+  promoSubtitle: {
+    fontSize: theme.typography.fontSize.sm,
+    color: 'rgba(255,255,255,0.9)',
+    lineHeight: 20,
+  },
+  footer: {
+    paddingHorizontal: theme.spacing[4],
+    paddingTop: theme.spacing[3],
+    backgroundColor: theme.colors.surface,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: theme.colors.borderLight,
+  },
+  submitButton: {
+    width: '100%',
+    borderRadius: theme.borderRadius.lg,
+    overflow: 'hidden',
+    backgroundColor: theme.colors.primary,
+  },
+  submitButtonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.primary,
+    paddingVertical: theme.spacing[4],
+    paddingHorizontal: theme.spacing[4],
+    columnGap: theme.spacing[2],
+  },
+  submitButtonText: {
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.white,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    backgroundColor: theme.colors.surface,
+    borderTopLeftRadius: theme.borderRadius.xl,
+    borderTopRightRadius: theme.borderRadius.xl,
+    paddingTop: theme.spacing[3],
+    paddingBottom: theme.spacing[6],
+    maxHeight: '60%',
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: theme.colors.gray300,
+    alignSelf: 'center',
+    marginBottom: theme.spacing[3],
+  },
+  modalTitle: {
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.black,
+    paddingHorizontal: theme.spacing[4],
+    marginBottom: theme.spacing[3],
+  },
+  modalOption: {
+    paddingHorizontal: theme.spacing[4],
+    paddingVertical: theme.spacing[3],
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.borderLight,
+  },
+  modalOptionSelected: {
+    backgroundColor: '#E8F6F8',
+  },
+  modalOptionText: {
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.gray800,
+  },
+  modalOptionTextSelected: {
+    color: theme.colors.primary,
+    fontWeight: theme.typography.fontWeight.semibold,
+  },
+});
+
+export default styles;

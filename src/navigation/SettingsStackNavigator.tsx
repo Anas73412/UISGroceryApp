@@ -11,6 +11,8 @@ import OrderDetailScreen from '../features/orders/screens/OrderDetailScreen';
 import OrderTrackingScreen from '../features/orders/screens/OrderTrackingScreen';
 import { MyProductRequestScreen } from '../features/productrequests/MyProductRequestScreen';
 import { NewProductRequestScreen } from '../features/productrequests/NewProductRequestScreen';
+import { ComplainScreen } from '../features/complains/ComplainScreen';
+import { AddComplainScreen } from '../features/complains/AddComplainScreen';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
@@ -33,6 +35,8 @@ export function SettingsStackNavigator() {
         name="NewProductRequest"
         component={NewProductRequestScreen}
       />
+      <Stack.Screen name="MyComplaints" component={ComplainScreen} />
+      <Stack.Screen name="AddComplain" component={AddComplainScreen} />
     </Stack.Navigator>
   );
 }
