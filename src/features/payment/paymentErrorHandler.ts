@@ -7,7 +7,7 @@ export interface PaymentError {
   code: string;
   description: string;
   message: string;
-  originalError?: any;
+  originalError?: unknown;
 }
 
 export const PaymentErrorCodes = {
@@ -26,13 +26,10 @@ export const PaymentErrorCodes = {
 };
 
 export const paymentErrorHandler = {
-  /**
-   * Map Razorpay error codes to user-friendly messages
-   */
   getErrorMessage(code: string, description?: string): string {
     const errorMessages: Record<string, string> = {
       [PaymentErrorCodes.CANCELLED]:
-        'Payment was cancelled. Please try again if you wish to complete the purchase.',
+        'Payment was cancelled. You can try again when you are ready.',
       [PaymentErrorCodes.BAD_REQUEST_ERROR]:
         'Invalid payment request. Please check your details and try again.',
       [PaymentErrorCodes.NETWORK_ERROR]:
@@ -53,7 +50,7 @@ export const paymentErrorHandler = {
       [PaymentErrorCodes.CARD_EXPIRED]:
         'Your card has expired. Please use another payment method.',
       [PaymentErrorCodes.UNKNOWN_ERROR]:
-        description || 'An unknown error occurred. Please try again.',
+        description || 'Something went wrong with your payment. Please try again.',
     };
 
     return (
@@ -61,9 +58,6 @@ export const paymentErrorHandler = {
     );
   },
 
-  /**
-   * Get error title based on error code
-   */
   getErrorTitle(code: string): string {
     const titleMap: Record<string, string> = {
       [PaymentErrorCodes.CANCELLED]: 'Payment Cancelled',
@@ -77,15 +71,12 @@ export const paymentErrorHandler = {
       [PaymentErrorCodes.PAYMENT_DECLINED]: 'Payment Declined',
       [PaymentErrorCodes.INSUFFICIENT_FUNDS]: 'Insufficient Funds',
       [PaymentErrorCodes.CARD_EXPIRED]: 'Card Expired',
-      [PaymentErrorCodes.UNKNOWN_ERROR]: 'Payment Error',
+      [PaymentErrorCodes.UNKNOWN_ERROR]: 'Payment Failed',
     };
 
-    return titleMap[code] || 'Payment Error';
+    return titleMap[code] || 'Payment Failed';
   },
 
-  /**
-   * Check if error is retryable
-   */
   isRetryable(code: string): boolean {
     const retryableErrors = [
       PaymentErrorCodes.NETWORK_ERROR,
@@ -96,24 +87,12 @@ export const paymentErrorHandler = {
     return retryableErrors.includes(code);
   },
 
-  /**
-   * Map exception to PaymentError
-   */
-  mapError(error: any): PaymentError {
+  mapError(error: { code?: string; description?: string; message?: string }): PaymentError {
     if (error.code === PaymentErrorCodes.CANCELLED) {
       return {
         code: PaymentErrorCodes.CANCELLED,
         description: 'User cancelled the payment',
         message: this.getErrorMessage(PaymentErrorCodes.CANCELLED),
-        originalError: error,
-      };
-    }
-
-    if (error instanceof TypeError && error.message.includes('Network')) {
-      return {
-        code: PaymentErrorCodes.NETWORK_ERROR,
-        description: error.message,
-        message: this.getErrorMessage(PaymentErrorCodes.NETWORK_ERROR),
         originalError: error,
       };
     }
@@ -129,9 +108,6 @@ export const paymentErrorHandler = {
     };
   },
 
-  /**
-   * Log error for debugging
-   */
   logError(error: PaymentError) {
     console.error('[PaymentError]', {
       code: error.code,

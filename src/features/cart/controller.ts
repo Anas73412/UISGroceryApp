@@ -13,6 +13,15 @@ import { addressController } from '../address/controller';
 import { DeliveryChargesModel } from '../../data/models/DeliveryChargesModel';
 import { splashService } from '../splash/service';
 import axios from 'axios';
+import type {
+  SaveOrderRequest,
+  OrderItem,
+} from '../../data/models/SaveOrderRequest';
+import type { OrderModel } from '../../data/models/OrderModel';
+
+type SaveOrderCartLine = Omit<CartProductModel, 'id'> & {
+  id?: string | number;
+};
 
 export const cartController = {
   async fetchUserCart(): Promise<ApiResponseModel<CartProductModel[]>> {
@@ -122,6 +131,50 @@ export const cartController = {
         status: FAILED,
         message: (error as Error).message || 'Failed to load app configuration',
       };
+    }
+  },
+
+  async saveOrderBeforePayment(params: {
+    cartLines: SaveOrderCartLine[];
+    subtotal: number;
+    smartCartCharge: number;
+    deliveryCharge: number;
+    grandTotal: number;
+    deliveryAddressId: number;
+  }): Promise<ApiResponseModel<OrderModel | null>> {
+    try {
+      const userId = sessionStore.getState()?.user?.uid ?? 0;
+
+      const orderItems: OrderItem[] = params.cartLines.map(line => {
+        const price =
+          line.sellingPrice ?? line.price ?? line.originalPrice ?? 0;
+        const quantity = line.cartQuantity ?? line.quantity ?? 0;
+
+        return {
+          productId: line.productId,
+          quantity,
+          itemTotalAmount: price * quantity,
+          userId,
+          status: 1,
+        };
+      });
+
+      const saveRequest: SaveOrderRequest = {
+        smartCartCharge: params.smartCartCharge,
+        orderItemsList: orderItems,
+        grandTotal: params.grandTotal,
+        deliveryCharge: params.deliveryCharge,
+        userId,
+        totalItemAmount: params.subtotal,
+        status: 1,
+        deliveryAddressId: params.deliveryAddressId,
+        paymentStatus: 'Pending',
+      };
+      const resposnse = await cartApiService.saveUserOrder(saveRequest);
+      console.log('Save order response:', resposnse.data);
+      return resposnse;
+    } catch (error) {
+      return mapErrorResponse<OrderModel | null>(error);
     }
   },
 };

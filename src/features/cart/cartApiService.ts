@@ -1,3 +1,5 @@
+import { OrderModel } from '../../data/models/OrderModel';
+import { SaveOrderRequest } from '../../data/models/SaveOrderRequest';
 import { apiClient } from '../../services/apiClient';
 import { ApiResponseModel } from '../../services/types';
 import { sessionStore } from '../../store/sessionStore';
@@ -69,6 +71,22 @@ export const cartApiService = {
         ApiResponseModel<CartProductModel[]>
       >(API_ENDPOINTS.USER_CART_LIST, { userId });
       return mapResponse<CartProductModel[]>(response);
+    } catch (error) {
+      return mapErrorResponse(error);
+    }
+  },
+
+  async saveUserOrder(
+    saveOrderRequest: SaveOrderRequest,
+  ): Promise<ApiResponseModel<OrderModel | null>> {
+    try {
+      const res = await apiClient.post<{
+        data?: OrderModel[];
+        status?: string;
+        message?: string;
+        code?: number;
+      }>(API_ENDPOINTS.SAVE_USER_ORDER, { ...saveOrderRequest });
+      return mapResponse<OrderModel | null>(res);
     } catch (error) {
       return mapErrorResponse(error);
     }

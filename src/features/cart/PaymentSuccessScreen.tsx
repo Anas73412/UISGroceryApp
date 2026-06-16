@@ -1,41 +1,70 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { theme } from '../../theme';
-import { RUPEE_SIGN } from '../../utils/constants';
+import { RUPEE_SIGN, SUCCESS } from '../../utils/constants';
+import { paymentService } from './paymentService';
+import type { CartStackParamList } from '../../navigation/types';
+import type { PaymentSuccessParams } from '../payment/types';
+import { appPrefs } from '../../data/repositories/AppPrefRepository';
+import { PREF_KEYS } from '../../data/repositories/GenericPrefRepository';
 
-export interface PaymentSuccessScreenProps {
-  paymentId: string;
-  orderId: string;
-  amount: number;
-  onComplete?: () => void;
-}
+type PaymentSuccessRouteProp = RouteProp<CartStackParamList, 'PaymentSuccess'>;
+type PaymentSuccessNavProp = NativeStackNavigationProp<
+  CartStackParamList,
+  'PaymentSuccess'
+>;
 
-type RootStackNavigationProp = NativeStackNavigationProp<any>;
-
-export function PaymentSuccessScreen({ route }: any) {
-  const navigation = useNavigation<RootStackNavigationProp>();
-  const { paymentId, orderId, amount, onComplete } =
-    route.params as PaymentSuccessScreenProps;
+export function PaymentSuccessScreen() {
+  const navigation = useNavigation<PaymentSuccessNavProp>();
+  const route = useRoute<PaymentSuccessRouteProp>();
+  const { paymentId, orderId, orderKey, amount } =
+    route.params as PaymentSuccessParams;
+  const statusUpdatedRef = useRef(false);
 
   useEffect(() => {
-    // Auto-navigate after 3 seconds if onComplete callback not provided
-    if (!onComplete) {
-      const timer = setTimeout(() => {
-        handleContinue();
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [onComplete]);
+    if (statusUpdatedRef.current) return;
+    statusUpdatedRef.current = true;
+
+    const syncPaymentStatus = async () => {
+      try {
+        const res = await paymentService.updatePaymentStatus({
+          orderId,
+          orderKey,
+          grandTotal: amount,
+          razorpayPaymentId: paymentId,
+          paymentStatus: 'captured',
+        });
+        if (res.status !== SUCCESS) {
+          console.log(
+            '[Payment] Failed to update success status:',
+            res.message,
+          );
+        }
+        await appPrefs.set(PREF_KEYS.ACTIVE_ORDER_ID, orderId);
+        await appPrefs.set(
+          PREF_KEYS.ACTIVE_ORDER_KEY,
+          orderKey?.toString() ?? '',
+        );
+      } catch (error) {
+        console.log('[Payment] Error while updating success status:', error);
+      }
+    };
+
+    syncPaymentStatus();
+  }, [orderId, orderKey, paymentId]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleContinue();
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleContinue = () => {
-    if (onComplete) {
-      onComplete();
-    } else {
-      navigation.navigate('Home');
-    }
+    navigation.navigate('CartMain');
   };
 
   return (
@@ -70,7 +99,7 @@ export function PaymentSuccessScreen({ route }: any) {
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Order ID</Text>
             <Text style={styles.detailValue} selectable>
-              {orderId}
+              {String(orderId)}
             </Text>
           </View>
 

@@ -26,4 +26,4 @@ export interface OrderTrackingModel {
   updatedAt?: string;
 }
 
-export const ORDER_TRACKING_COLLECTION = 'order_tracking';
+export const ORDER_TRACKING_COLLECTION = 'orders';

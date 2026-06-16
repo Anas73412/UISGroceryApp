@@ -1,133 +1,290 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { theme } from '../../theme';
 import { useOrderTracking } from '../context/OrderTrackingContext';
 
-const SNACK_HEIGHT = 56;
 const TAB_BAR_OFFSET = 72;
 
 export function OrderTrackingSnackBar() {
   const insets = useSafeAreaInsets();
+
   const { tracking, snackVisible, openTrackingScreen, dismissSnack } =
     useOrderTracking();
 
-  if (!snackVisible || !tracking) return null;
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.08, {
+          duration: 800,
+          easing: Easing.inOut(Easing.ease),
+        }),
+        withTiming(1, {
+          duration: 800,
+          easing: Easing.inOut(Easing.ease),
+        }),
+      ),
+      -1,
+      true,
+    );
+  }, []);
+
+  const animatedIconStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  if (!snackVisible || !tracking) {
+    return null;
+  }
 
   const eta =
     tracking.etaMinutesMin != null && tracking.etaMinutesMax != null
-      ? `${tracking.etaMinutesMin}–${tracking.etaMinutesMax} mins`
+      ? `${tracking.etaMinutesMin}-${tracking.etaMinutesMax} min`
       : 'On the way';
+
+  const status = tracking.statusLabel?.toLowerCase();
+
+  const statusColor =
+    status === 'delivered'
+      ? theme.colors.success
+      : status === 'cancelled'
+      ? theme.colors.error
+      : theme.colors.primary;
 
   return (
     <View
-      style={[
-        styles.wrap,
-        { bottom: insets.bottom + TAB_BAR_OFFSET, minHeight: SNACK_HEIGHT },
-      ]}
       pointerEvents="box-none"
+      style={[
+        styles.wrapper,
+        {
+          bottom: insets.bottom + TAB_BAR_OFFSET,
+        },
+      ]}
     >
-      <View style={styles.bar}>
-        <Pressable
-          style={({ pressed }) => [
-            styles.barMain,
-            pressed && styles.barPressed,
-          ]}
-          onPress={openTrackingScreen}
-        >
-          <View style={styles.iconCircle}>
-            <MaterialIcons
-              name="delivery-dining"
-              size={22}
-              color={theme.colors.textOnPrimary}
-            />
-          </View>
-          <View style={styles.textCol}>
-            <Text style={styles.statusLabel} numberOfLines={1}>
+      <Pressable
+        onPress={openTrackingScreen}
+        style={({ pressed }) => [styles.container, pressed && styles.pressed]}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View
+            style={[
+              styles.statusBadge,
+              {
+                backgroundColor: statusColor,
+              },
+            ]}
+          >
+            <Text style={styles.statusBadgeText}>
               {tracking.statusLabel?.toUpperCase() ?? 'IN TRANSIT'}
             </Text>
-            <Text style={styles.subtitle} numberOfLines={1}>
-              Order #{tracking.orderKey} · {eta}
-            </Text>
           </View>
-          <MaterialIcons
-            name="chevron-right"
-            size={24}
-            color={theme.colors.primary}
-          />
-        </Pressable>
-        <Pressable hitSlop={12} onPress={dismissSnack} style={styles.closeBtn}>
-          <MaterialIcons
-            name="close"
-            size={18}
-            color={theme.colors.gray500}
-          />
-        </Pressable>
-      </View>
+
+          <Pressable
+            hitSlop={12}
+            onPress={dismissSnack}
+            style={styles.closeButton}
+          >
+            <MaterialIcons
+              name="close"
+              size={18}
+              color={theme.colors.gray600}
+            />
+          </Pressable>
+        </View>
+
+        {/* Main Content */}
+        <View style={styles.content}>
+          <Animated.View
+            style={[
+              styles.iconContainer,
+              {
+                backgroundColor: statusColor,
+              },
+              animatedIconStyle,
+            ]}
+          >
+            <MaterialIcons name="delivery-dining" size={30} color="#FFFFFF" />
+          </Animated.View>
+
+          <View style={styles.infoContainer}>
+            <Text style={styles.orderId} numberOfLines={1}>
+              Order #{tracking.orderKey}
+            </Text>
+
+            <Text
+              style={[
+                styles.etaText,
+                {
+                  color: statusColor,
+                },
+              ]}
+            >
+              {eta === 'On the way'
+                ? 'Your order is on the way'
+                : `Arriving in ${eta}`}
+            </Text>
+
+            <Text style={styles.helperText}>Tap to view live tracking</Text>
+          </View>
+
+          <View
+            style={[
+              styles.trackButton,
+              {
+                backgroundColor: statusColor,
+              },
+            ]}
+          >
+            <Text style={styles.trackButtonText}>Track</Text>
+          </View>
+        </View>
+
+        {/* Progress Bar */}
+        {status !== 'delivered' && status !== 'cancelled' && (
+          <View style={styles.progressTrack}>
+            <View
+              style={[
+                styles.progressFill,
+                {
+                  backgroundColor: statusColor,
+                  width: '65%',
+                },
+              ]}
+            />
+          </View>
+        )}
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: {
+  wrapper: {
     position: 'absolute',
-    left: theme.spacing[4],
-    right: theme.spacing[4],
-    zIndex: 100,
+    left: 16,
+    right: 16,
+    zIndex: 999,
+    backgroundColor: '#FFFFFF',
   },
-  bar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    paddingRight: theme.spacing[1],
-    borderWidth: 1,
-    borderColor: theme.colors.borderLight,
-    shadowColor: theme.colors.black,
+
+  container: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 16,
+
+    shadowColor: '#000',
     shadowOpacity: 0.12,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
+    shadowRadius: 18,
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+
+    elevation: 12,
   },
-  barMain: {
-    flex: 1,
+
+  pressed: {
+    opacity: 0.95,
+  },
+
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: theme.spacing[2],
-    paddingLeft: theme.spacing[3],
+    justifyContent: 'space-between',
+    marginBottom: 14,
   },
-  barPressed: {
-    opacity: 0.92,
+
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
   },
-  iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.primary,
+
+  statusBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+  },
+
+  closeButton: {
+    padding: 4,
+  },
+
+  content: {
+    flexDirection: 'row',
     alignItems: 'center',
+  },
+
+  iconContainer: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
     justifyContent: 'center',
-    marginRight: theme.spacing[3],
+    alignItems: 'center',
   },
-  textCol: {
+
+  infoContainer: {
     flex: 1,
-    minWidth: 0,
+    marginLeft: 14,
+    marginRight: 10,
   },
-  statusLabel: {
-    fontSize: theme.typography.fontSize.xs,
-    fontWeight: theme.typography.fontWeight.bold,
-    color: theme.colors.primary,
-    letterSpacing: 0.5,
+
+  orderId: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
   },
-  subtitle: {
-    marginTop: 2,
-    fontSize: theme.typography.fontSize.sm,
-    fontWeight: theme.typography.fontWeight.semibold,
-    color: theme.colors.gray700,
+
+  etaText: {
+    marginTop: 4,
+    fontSize: 14,
+    fontWeight: '600',
   },
-  closeBtn: {
-    marginLeft: theme.spacing[1],
-    padding: theme.spacing[1],
+
+  helperText: {
+    marginTop: 4,
+    fontSize: 12,
+    color: '#6B7280',
+  },
+
+  trackButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  trackButtonText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+
+  progressTrack: {
+    height: 4,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 999,
+    marginTop: 14,
+    overflow: 'hidden',
+  },
+
+  progressFill: {
+    height: '100%',
+    borderRadius: 999,
   },
 });

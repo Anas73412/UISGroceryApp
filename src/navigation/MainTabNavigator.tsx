@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import type { MainTabParamList } from './types';
 import { HomeStackNavigator } from './HomeStackNavigator';
-import { CartScreen } from '../features/cart/CartScreen';
+import { CartStackNavigator } from './CartStackNavigator';
 import { ProfileScreen } from '../features/profile/ProfileScreen';
 import { ShareScreen } from '../features/share/screens/ShareScreen';
 import { SettingsStackNavigator } from './SettingsStackNavigator';
@@ -23,6 +23,8 @@ const HIDE_TAB_BAR_ROUTES = [
   'Order',
   'OrderDetail',
   'OrderTracking',
+  'PaymentSuccess',
+  'PaymentFailure',
 ];
 export function MainTabNavigator() {
   return (
@@ -47,8 +49,16 @@ export function MainTabNavigator() {
       />
       <Tab.Screen
         name="CartTab"
-        component={CartScreen}
-        options={{ title: 'Cart' }}
+        component={CartStackNavigator}
+        options={({ route }) => {
+          const routeName = getFocusedRouteNameFromRoute(route) ?? 'CartMain';
+          const shouldHideBottomBar =
+            routeName === 'PaymentFailure' || routeName === 'PaymentSuccess';
+          return {
+            title: 'Cart',
+            tabBarStyle: { display: shouldHideBottomBar ? 'none' : 'flex' },
+          };
+        }}
       />
       <Tab.Screen
         name="ProfileTab"

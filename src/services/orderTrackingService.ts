@@ -61,9 +61,7 @@ function buildDefaultSteps(status: number): OrderTrackingStep[] {
     {
       key: 'delivered',
       title: 'Delivered',
-      subtitle: deliveredDone
-        ? `Delivered at ${time(0)}`
-        : 'Expected soon',
+      subtitle: deliveredDone ? `Delivered at ${time(0)}` : 'Expected soon',
       completedAt: deliveredDone ? time(0) : undefined,
     },
   ];
@@ -133,9 +131,7 @@ async function fetchOrderByKey(orderKey: string): Promise<OrderModel | null> {
   if (res.status !== SUCCESS || !Array.isArray(res.data)) return null;
   return (
     res.data.find(
-      o =>
-        o.orderKey?.trim() === orderKey ||
-        String(o.orderId) === orderKey,
+      o => o.orderKey?.trim() === orderKey || String(o.orderId) === orderKey,
     ) ?? null
   );
 }
@@ -153,8 +149,7 @@ export function subscribeOrderTracking(
 
   const emit = async (partial: Partial<OrderTrackingModel> | null) => {
     if (stopped) return;
-    const order =
-      options?.fallbackOrder ?? (await fetchOrderByKey(orderKey));
+    const order = options?.fallbackOrder ?? (await fetchOrderByKey(orderKey));
     const merged = mergeTracking(partial, orderKey, order ?? undefined);
     onUpdate(merged);
     if (isTerminalOrderStatus(merged.status)) {
@@ -192,17 +187,27 @@ export function subscribeOrderTracking(
       ref,
       (snap: DocumentSnapshot) => {
         void emit(
-          snap.exists()
-            ? (snap.data() as Partial<OrderTrackingModel>)
-            : null,
+          snap.exists() ? (snap.data() as Partial<OrderTrackingModel>) : null,
+        );
+        console.log(
+          '[Order Tracking] Updated tracking info for order:',
+          orderKey,
         );
       },
       () => {
-        startPolling();
+        console.log(
+          '[Order Tracking] Error fetching tracking info for order:',
+          orderKey,
+        );
+        // startPolling();
       },
     );
   } else {
-    startPolling();
+    console.log(
+      '[Order Tracking] Firebase not configured, falling back to polling for order:',
+      orderKey,
+    );
+    // startPolling();
   }
 
   return () => {

@@ -8,8 +8,13 @@ import {
   ActivityIndicator,
   ListRenderItem,
 } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import {
+  useNavigation,
+  useFocusEffect,
+  type CompositeNavigationProp,
+} from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import styles from './CartScreen.Style';
 import { theme } from '../../theme';
@@ -23,7 +28,10 @@ import { sessionStore } from '../../store/sessionStore';
 import { cartSyncService } from './cartSyncService';
 import { useMessageDialog } from '../../components/context/MessageDialogContext';
 import Toast from 'react-native-toast-message';
-import type { MainTabParamList } from '../../navigation/types';
+import type {
+  CartStackParamList,
+  MainTabParamList,
+} from '../../navigation/types';
 import { cartController } from './controller';
 import { CartProductModel } from '../home/components/ProductCard';
 import { AddressResponseModel } from '../../data/models/AddressModel';
@@ -32,7 +40,7 @@ import { toSafeNumber } from '../../utils/utils';
 import { DeliveryChargesModel } from '../../data/models/DeliveryChargesModel';
 import { useLoading } from '../../components/context/LoadingContext';
 import { paymentService } from './paymentService';
-import { paymentErrorHandler } from './paymentErrorHandler';
+import { paymentErrorHandler } from '../payment/paymentErrorHandler';
 
 type Line = CartResponseModel & { product?: ProductModel };
 
@@ -103,9 +111,14 @@ async function fetchCartLinesFromApi(): Promise<Line[]> {
   return rows.filter(r => (r.productId ?? 0) > 0).map(apiRowToLine);
 }
 
+type CartScreenNavigationProp = CompositeNavigationProp<
+  NativeStackNavigationProp<CartStackParamList, 'CartMain'>,
+  BottomTabNavigationProp<MainTabParamList>
+>;
+
 export function CartScreen() {
-  const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
-  const { showErrorDialog, showSuccessDialog } = useMessageDialog();
+  const navigation = useNavigation<CartScreenNavigationProp>();
+  const { showErrorDialog } = useMessageDialog();
   const [cartLines, setCartLines] = useState<Line[]>([]);
   const [listLoading, setListLoading] = useState(true);
   const [cartError, setCartError] = useState<string | null>(null);
@@ -148,9 +161,10 @@ export function CartScreen() {
       return;
     }
 
+    const deliveryChargeAmount = deliveryRate?.amount ?? 0;
     const totalAmount =
       subtotal +
-      (deliveryRate?.amount ?? 0) +
+      deliveryChargeAmount +
       (subtotal < smallCartMinCharge ? smallCartAmount : 0);
 
     if (totalAmount < 1) {
@@ -166,6 +180,35 @@ export function CartScreen() {
       showErrorDialog('Payment Unavailable', gatewayError);
       return;
     }
+
+    show('Saving order...');
+    const saveOrderResult = await cartController.saveOrderBeforePayment({
+      cartLines: cartLines,
+      subtotal,
+      smartCartCharge: subtotal < smallCartMinCharge ? smallCartAmount : 0,
+      deliveryCharge: deliveryChargeAmount,
+      grandTotal: totalAmount,
+      deliveryAddressId: selectedAddressId,
+    });
+    hide();
+
+    if (saveOrderResult.status !== SUCCESS || !saveOrderResult.data) {
+      const message =
+        saveOrderResult.message ||
+        'We could not create your order. Please try again in a moment.';
+
+      navigation.navigate('PaymentFailure', {
+        title: 'Order Not Saved',
+        message,
+        errorCode: 'ORDER_SAVE_FAILED',
+        orderId: saveOrderResult.data?.orderId,
+        orderKey: saveOrderResult.data?.orderKey,
+        amount: totalAmount,
+      });
+      return;
+    }
+    console.log('Order saved successfully with ID:', saveOrderResult.data);
+    const savedOrder = saveOrderResult.data;
 
     let paymentAttempts = 0;
     const maxRetries = 2;
@@ -187,30 +230,17 @@ export function CartScreen() {
         });
 
         hide();
+        cartController.clearCart();
 
-        // Payment successful!
-        showSuccessDialog(
-          'Payment Successful',
-          `Payment ID: ${
-            paymentResponse.razorpay_payment_id
-          }\n\nTotal Amount: ₹${totalAmount.toFixed(2)}`,
-        );
-
-        // TODO: In production, verify payment with backend:
-        // await fetch('/api/verify-payment', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(paymentResponse)
-        // });
-
-        // Clear cart and navigate to home
-        setTimeout(() => {
-          cartController.clearCart();
-          navigation.navigate('HomeTab');
-        }, 2000);
+        navigation.navigate('PaymentSuccess', {
+          paymentId: paymentResponse.razorpay_payment_id,
+          orderId: savedOrder.orderId,
+          orderKey: savedOrder.orderKey,
+          amount: totalAmount,
+        });
       } catch (error: any) {
         hide();
-        console.error('Payment error:', error);
+        // console.error('Payment error:', error);
 
         // Map error using error handler
         const mappedError = paymentErrorHandler.mapError(error);
@@ -235,11 +265,18 @@ export function CartScreen() {
           // Auto-retry after user acknowledges
           setTimeout(executePayment, 1500);
         } else {
-          // Non-retryable error or max retries exceeded
           const errorTitle = paymentErrorHandler.getErrorTitle(
             mappedError.code,
           );
-          showErrorDialog(errorTitle, mappedError.message);
+          navigation.navigate('PaymentFailure', {
+            title: errorTitle,
+            message: mappedError.message,
+            errorCode: mappedError.code,
+            orderId: savedOrder.orderId,
+            orderKey: savedOrder.orderKey,
+            amount: totalAmount,
+            paymentId: error?.razorpay_payment_id,
+          });
         }
       }
     };

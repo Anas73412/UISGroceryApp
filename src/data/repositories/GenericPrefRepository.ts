@@ -44,3 +44,12 @@ export class GenericPrefRepository<T extends PrefMap> {
     await Keychain.resetGenericPassword({ server: this.service });
   }
 }
+export const PREF_KEYS = {
+  SELECTED_ADDRESS_ID: 'selectedAddressId',
+  LATTITUDE: 'lattitude',
+  LONGITUDE: 'longitude',
+  ACTIVE_ORDER_KEY: 'activeOrderKey',
+  ACTIVE_ORDER_ID: 'activeOrderId',
+  CURR_ORDER_ID: 'currOrderId',
+  CURR_ORDER_KEY: 'currOrderKey',
+} as const;

@@ -1,6 +1,11 @@
 import RazorpayCheckout from 'react-native-razorpay';
 import { sessionStore } from '../../store/sessionStore';
-import { CONFIG_KEYS, RUPEE_SIGN, SUCCESS } from '../../utils/constants';
+import {
+  API_ENDPOINTS,
+  CONFIG_KEYS,
+  RUPEE_SIGN,
+  SUCCESS,
+} from '../../utils/constants';
 import {
   buildPaymentEmail,
   getPaymentOptions,
@@ -9,6 +14,10 @@ import {
 } from '../../config/paymentConfig';
 import ConfigRepository from '../../data/repositories/ConfigRepository';
 import { splashService } from '../splash/service';
+import { ApiResponseModel } from '../../services/types';
+import { mapErrorResponse, mapResponse } from '../auth/screens/login/service';
+import { apiClient } from '../../services/apiClient';
+import { SaveOrderRequest } from '../../data/models/SaveOrderRequest';
 
 export interface PaymentOptions {
   amount: number;
@@ -134,6 +143,21 @@ export const paymentService = {
       return null;
     } catch (e) {
       return (e as Error).message;
+    }
+  },
+
+  async updatePaymentStatus(
+    request: SaveOrderRequest,
+  ): Promise<ApiResponseModel<string>> {
+    try {
+      const response = await apiClient.post<ApiResponseModel<string>>(
+        API_ENDPOINTS.UPDATE_PAYMENT_STATUS,
+        { ...request },
+      );
+      console.log('[Payment] Payment status update response:', response.data);
+      return mapResponse<string>(response);
+    } catch (error) {
+      return mapErrorResponse(error);
     }
   },
 };

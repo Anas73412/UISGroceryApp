@@ -28,6 +28,7 @@ import type {
 } from '../../navigation/types';
 import { addressController } from './controller';
 import styles from './AddressScreen.Style';
+import { PREF_KEYS } from '../../data/repositories/GenericPrefRepository';
 
 type AddressNavigationProp = NativeStackNavigationProp<
   HomeStackParamList & SettingsStackParamList,
@@ -69,7 +70,9 @@ export function AddressScreen() {
   const loadAddressList = useCallback(async () => {
     show('Loading...');
     try {
-      const selectedAddressId = await appPrefs.get('selectedAddressId');
+      const selectedAddressId = await appPrefs.get(
+        PREF_KEYS.SELECTED_ADDRESS_ID,
+      );
       setDefaultAddressId(Number(selectedAddressId ?? 0));
 
       const apiRes = await addressController.fetchAddressList();
@@ -123,7 +126,7 @@ export function AddressScreen() {
       variant: 'primary',
       icon: 'question-circle',
       onConfirm: async () => {
-        await appPrefs.set('selectedAddressId', address.addressId);
+        await appPrefs.set(PREF_KEYS.SELECTED_ADDRESS_ID, address.addressId);
         setDefaultAddressId(address.addressId);
       },
     });

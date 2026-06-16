@@ -15,10 +15,29 @@ export type RootStackParamList = {
   Main: NavigatorScreenParams<MainTabParamList> | undefined;
 };
 
+export type CartStackParamList = {
+  CartMain: undefined;
+  PaymentSuccess: {
+    paymentId: string;
+    orderId: number;
+    orderKey?: string;
+    amount: number;
+  };
+  PaymentFailure: {
+    title: string;
+    message: string;
+    errorCode?: string;
+    orderId?: number;
+    orderKey?: string;
+    paymentId?: string;
+    amount: number;
+  };
+};
+
 export type MainTabParamList = {
   HomeTab: NavigatorScreenParams<HomeStackParamList> | undefined;
   ShareTab: undefined;
-  CartTab: undefined;
+  CartTab: NavigatorScreenParams<CartStackParamList> | undefined;
   ProfileTab: undefined;
   SettingsTab: NavigatorScreenParams<SettingsStackParamList> | undefined;
 };
@@ -77,5 +96,6 @@ declare global {
     interface MainParamList extends MainTabParamList {}
     interface HomeParamList extends HomeStackParamList {}
     interface SettingsParamList extends SettingsStackParamList {}
+    interface CartParamList extends CartStackParamList {}
   }
 }

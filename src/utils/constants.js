@@ -32,6 +32,8 @@ export const API_ENDPOINTS = {
   GET_ALL_ORDERS: `${SUB_PATH}/getUserAllOrders`,
   GET_REQUETED_PRODUCT_LIST:`${SUB_ORDER_PATH}/getRequestedProductList`,
   NEW_PRODUCT_REQUEST:`${UPLOAD_BASE_URL}/addProductRequest`,
+  SAVE_USER_ORDER: `${SUB_ORDER_PATH}/SaveOrder`,
+  UPDATE_PAYMENT_STATUS: `${SUB_ORDER_PATH}/UpdatePaymentStatus`,
 };
 
 export const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -72,12 +74,6 @@ export const CONFIG_KEYS = {
 export const SERVICE_AUTH_CREDENTIALS = 'com.united.uis';
 export const APP_UIS_PREFS = 'com.united.uis.prefs';
 
-export const PREF_KEYS = {
-  SELECTED_ADDRESS_ID: 'selectedAddressId',
-  LATTITUDE: 'lattitude',
-  LONGITUDE: 'longitude',
-  ACTIVE_ORDER_KEY: 'activeOrderKey',
-  ACTIVE_ORDER_ID: 'activeOrderId',
-};
+
 
 export const ORDER_TRACKING_PATH = `${SUB_ORDER_PATH}/getOrderTracking`;
