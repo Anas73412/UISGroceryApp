@@ -1,16 +1,6 @@
 import axios, { type AxiosRequestConfig, type Method } from 'axios';
-import { Platform } from 'react-native';
-import type { ApiResponseModel } from './types';
 
-// On Android emulator, localhost is the emulator itself; use 10.0.2.2 to reach host machine.
-const getBaseUrl = () => {
-  if (Platform.OS === 'android') {
-    return 'https://demo.unitedinternetservice.in';
-    // return 'http://10.0.2.2:3000';
-  }
-  return 'http://localhost:3000';
-};
-const BASE_URL = getBaseUrl();
+const BASE_URL = 'https://demo.unitedinternetservice.in';
 
 interface RequestConfig {
   method?: Method;
