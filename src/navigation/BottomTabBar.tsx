@@ -9,6 +9,7 @@ import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 const TAB_ICONS: Record<string, string> = {
   HomeTab: 'home',
   ShareTab: 'share',
+  PlanTab: 'wifi',
   CartTab: 'shopping-bag',
   ProfileTab: 'person',
   SettingsTab: 'settings',
@@ -17,6 +18,7 @@ const TAB_ICONS: Record<string, string> = {
 const TAB_LABELS: Record<string, string> = {
   HomeTab: 'Home',
   ShareTab: 'Share',
+  PlanTab: 'Plan',
   CartTab: 'Cart',
   ProfileTab: 'Profile',
   SettingsTab: 'Setting',
@@ -26,6 +28,7 @@ const HIDE_TAB_BAR_ROUTES = [
   'ProductScreen',
   'ProductDetailScreen',
   'HomeDeliveryAddress',
+  'MyBills',
   'DeliveryAddress',
   'AddAddress',
   'ContactUs',

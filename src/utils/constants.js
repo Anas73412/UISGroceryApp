@@ -7,7 +7,7 @@ export const SUB_ORDER_PATH='/api/Order';
 export const IMAGE_BASE_URL='https://unitedinternetservice.in/';
 export const RUPEE_SIGN='\u20B9';
 export const UPLOAD_BASE_URL='https://unitedinternetservice.in/api/Fileuplodd';
-
+export const BILL_URL='http://unitedinternetservice.in/bills/'
 //API Endpoints
 export const API_ENDPOINTS = {
   LOGIN: `${SUB_PATH}/login`,
@@ -36,6 +36,7 @@ export const API_ENDPOINTS = {
   UPDATE_PAYMENT_STATUS: `${SUB_ORDER_PATH}/UpdatePaymentStatus`,
   GET_ALL_COMPLAINS: `${SUB_PATH}/getAllComplains`,
   ADD_COMPLAIN: `${SUB_PATH}/addComplain`,
+  GET_CUSTOMER_BILLS: `${SUB_PATH}/getCustomerBills`,
 };
 
 export const { width: SCREEN_WIDTH } = Dimensions.get('window');

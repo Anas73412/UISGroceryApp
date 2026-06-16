@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import { SettingController } from '../SettingController';
 import { sessionStore } from '../../../store/sessionStore';
 import { UserModel } from '../../../data/models/UserModel';
 import { IMAGE_BASE_URL } from '../../../utils/constants';
+import { isWiFiUserEnabled } from '../../../utils/userAccess';
 type SettingOption = {
   id: string;
   icon: string;
@@ -99,6 +100,13 @@ export function SettingsScreen() {
       : '';
     setImageUri(uri);
   });
+
+  const settingOptions = useMemo(() => {
+    const showComplains = isWiFiUserEnabled(user);
+    return SETTING_OPTIONS.filter(
+      option => option.id !== 'complains' || showComplains,
+    );
+  }, [user]);
 
   const handleOptionPress = (option: SettingOption) => {
     switch (option.id) {
@@ -205,12 +213,12 @@ export function SettingsScreen() {
 
         {/* Settings options card */}
         <View style={styles.optionsCard}>
-          {SETTING_OPTIONS.map((option, index) => (
+          {settingOptions.map((option, index) => (
             <View
               key={option.id}
               style={[
                 styles.optionRowWrapper,
-                index === SETTING_OPTIONS.length - 1 && styles.optionRowLast,
+                index === settingOptions.length - 1 && styles.optionRowLast,
               ]}
             >
               {/* <Pressable

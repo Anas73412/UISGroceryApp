@@ -5,10 +5,13 @@ import { HomeStackNavigator } from './HomeStackNavigator';
 import { CartStackNavigator } from './CartStackNavigator';
 import { ProfileScreen } from '../features/profile/ProfileScreen';
 import { ShareScreen } from '../features/share/screens/ShareScreen';
+import { PlanScreen } from '../features/plan/screens/PlanScreen';
 import { SettingsStackNavigator } from './SettingsStackNavigator';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { BottomTabBar } from './BottomTabBar';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import { sessionStore } from '../store/sessionStore';
+import { isWiFiUserEnabled } from '../utils/userAccess';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -18,6 +21,7 @@ const HIDE_TAB_BAR_ROUTES = [
   'ProductScreen',
   'ProductDetailScreen',
   'HomeDeliveryAddress',
+  'MyBills',
   'MyProductRequest',
   'NewProductRequest',
   'Order',
@@ -27,6 +31,9 @@ const HIDE_TAB_BAR_ROUTES = [
   'PaymentFailure',
 ];
 export function MainTabNavigator() {
+  const user = sessionStore(state => state.user);
+  const isWifiUser = isWiFiUserEnabled(user);
+
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={renderTabBar}>
       <Tab.Screen
@@ -42,11 +49,19 @@ export function MainTabNavigator() {
         }}
         // options={{ title: 'Home' }}
       />
-      <Tab.Screen
-        name="ShareTab"
-        component={ShareScreen}
-        options={{ title: 'Share' }}
-      />
+      {isWifiUser ? (
+        <Tab.Screen
+          name="PlanTab"
+          component={PlanScreen}
+          options={{ title: 'Plan' }}
+        />
+      ) : (
+        <Tab.Screen
+          name="ShareTab"
+          component={ShareScreen}
+          options={{ title: 'Share' }}
+        />
+      )}
       <Tab.Screen
         name="CartTab"
         component={CartStackNavigator}

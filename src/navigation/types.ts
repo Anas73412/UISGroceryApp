@@ -37,6 +37,7 @@ export type CartStackParamList = {
 export type MainTabParamList = {
   HomeTab: NavigatorScreenParams<HomeStackParamList> | undefined;
   ShareTab: undefined;
+  PlanTab: undefined;
   CartTab: NavigatorScreenParams<CartStackParamList> | undefined;
   ProfileTab: undefined;
   SettingsTab: NavigatorScreenParams<SettingsStackParamList> | undefined;
@@ -65,6 +66,7 @@ export type HomeStackParamList = {
   ProductScreen: { categoryId: number; categoryName: string };
   ProductDetailScreen: { product: ProductModel };
   HomeDeliveryAddress: undefined;
+  MyBills: undefined;
   AddAddress: AddAddressRouteParams;
 };
 

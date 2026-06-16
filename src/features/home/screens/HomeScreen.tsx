@@ -39,6 +39,10 @@ import { addressController } from '../../address/controller';
 import { appPrefs } from '../../../data/repositories/AppPrefRepository';
 import { AddressResponseModel } from '../../../data/models/AddressModel';
 import { theme } from '../../../theme';
+import { sessionStore } from '../../../store/sessionStore';
+import { isWiFiUserEnabled } from '../../../utils/userAccess';
+import { WiFiDashboardSections } from '../components/WiFiDashboardSections';
+import { buildWiFiDashboardData } from '../components/wifiDashboardData';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -47,6 +51,9 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
 
 export function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const user = sessionStore(state => state.user);
+  const showWifiDashboard = isWiFiUserEnabled(user);
+  const wifiDashboardData = useMemo(() => buildWiFiDashboardData(user), [user]);
   const [products, setProducts] = React.useState<ProductModel[]>([]);
   const [sliders, setSliders] = useState<SliderModel[]>([]);
   const [categories, setCategories] = useState<CategoryModel[]>([]);
@@ -219,6 +226,14 @@ export function HomeScreen() {
     navigation.navigate('CategoryScreen');
   };
 
+  const navigateToPlanTab = useCallback(() => {
+    navigation.getParent()?.navigate('PlanTab' as never);
+  }, [navigation]);
+
+  const navigateToBills = useCallback(() => {
+    navigation.navigate('MyBills');
+  }, [navigation]);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -283,6 +298,16 @@ export function HomeScreen() {
                   </View>
                 </View>
               </Pressable>
+
+              {showWifiDashboard && (
+                <WiFiDashboardSections
+                  data={wifiDashboardData}
+                  onServiceDetailsPress={navigateToPlanTab}
+                  onPlanDetailsPress={navigateToPlanTab}
+                  onUpdatePress={navigateToPlanTab}
+                  onViewBillsPress={navigateToBills}
+                />
+              )}
 
               {/** Slider HOrizontal caraousal  */}
               {sliders.length > 0 && (
