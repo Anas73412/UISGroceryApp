@@ -27,9 +27,7 @@ export const cartStore = create<CartStore>((set, get) => ({
       };
       await CartRepository.addProductInCart(cartItem);
       await cartStore.getState().loadFromDB();
-    } catch (error) {
-      console.log('ErroException: ', error);
-    }
+    } catch (error) {}
   },
   removeItem: async productId => {
     const userId = sessionStore.getState().user?.uid;

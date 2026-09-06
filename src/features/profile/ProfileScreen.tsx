@@ -159,7 +159,6 @@ export function ProfileScreen() {
             <Pressable
               style={styles.avatarCameraButton}
               onPress={() => {
-                console.log('Opening image picker');
                 setPickerOpen(true);
               }}
               hitSlop={8}

@@ -12,7 +12,6 @@ import { CONFIG_KEYS, FAILED, SUCCESS } from '../../utils/constants';
 import { addressController } from '../address/controller';
 import { DeliveryChargesModel } from '../../data/models/DeliveryChargesModel';
 import { splashService } from '../splash/service';
-import axios from 'axios';
 import type {
   SaveOrderRequest,
   OrderItem,
@@ -65,7 +64,6 @@ export const cartController = {
       const smartCartCharge = await ConfigRepository.getConfigByKeyFromDB(
         CONFIG_KEYS.SMALL_CART_AMOUNT,
       );
-      console.log('Fetched smart cart charge from DB:', smartCartCharge);
       return smartCartCharge?.configValue
         ? parseFloat(smartCartCharge.configValue)
         : 0;
@@ -117,16 +115,6 @@ export const cartController = {
         }
       }
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log('Axios error details:', {
-          message: error.message,
-          code: error.code,
-          url: error.config?.url,
-        });
-      } else {
-        console.log('Non-axios error:', error);
-      }
-
       return {
         status: FAILED,
         message: (error as Error).message || 'Failed to load app configuration',
@@ -171,7 +159,6 @@ export const cartController = {
         paymentStatus: 'Pending',
       };
       const resposnse = await cartApiService.saveUserOrder(saveRequest);
-      console.log('Save order response:', resposnse.data);
       return resposnse;
     } catch (error) {
       return mapErrorResponse<OrderModel | null>(error);

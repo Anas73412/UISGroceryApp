@@ -1,13 +1,7 @@
-import React, { useState } from 'react';
-import {
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  ActivityIndicator,
-} from 'react-native';
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { theme } from '../../../theme';
+import { RemoteImage } from '../../../components/ui/RemoteImage/RemoteImage';
 
 type CategoryCardProps = {
   label: string;
@@ -24,7 +18,6 @@ export function CategoryCard({
   isSelected = false,
   onPress,
 }: CategoryCardProps) {
-  const [isLoading, setIsLoading] = useState(!!imagePath);
   const hasImage = !!imagePath;
 
   return (
@@ -36,32 +29,13 @@ export function CategoryCard({
         style={[styles.iconWrapper, isSelected && styles.iconWrapperSelected]}
       >
         {hasImage ? (
-          <>
-            <Image
-              source={{ uri: imagePath }}
-              style={styles.image}
-              resizeMode="cover"
-              onLoadStart={() => setIsLoading(true)}
-              onLoadEnd={() => setIsLoading(false)}
-            />
-            {isLoading && (
-              <View style={styles.loaderOverlay}>
-                <ActivityIndicator
-                  size="small"
-                  color={theme.colors.primary}
-                />
-              </View>
-            )}
-          </>
+          <RemoteImage
+            uri={imagePath}
+            style={styles.image}
+            resizeMode="cover"
+          />
         ) : (
-          <Text
-            style={[
-              styles.iconText,
-              isSelected && styles.iconTextSelected,
-            ]}
-          >
-            {iconText ?? '📦'}
-          </Text>
+          <RemoteImage style={styles.image} resizeMode="cover" />
         )}
       </View>
       <Text
@@ -97,12 +71,6 @@ const styles = StyleSheet.create({
   image: {
     width: '80%',
     height: '80%',
-  },
-  loaderOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: theme.colors.surfaceSecondary,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   iconText: {
     fontSize: theme.typography.fontSize.lg,

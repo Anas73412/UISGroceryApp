@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
-  Image,
   Pressable,
   FlatList,
   ActivityIndicator,
@@ -41,6 +40,7 @@ import { DeliveryChargesModel } from '../../data/models/DeliveryChargesModel';
 import { useLoading } from '../../components/context/LoadingContext';
 import { paymentService } from './paymentService';
 import { paymentErrorHandler } from '../payment/paymentErrorHandler';
+import { RemoteImage } from '../../components/ui/RemoteImage/RemoteImage';
 
 type Line = CartResponseModel & { product?: ProductModel };
 
@@ -207,7 +207,6 @@ export function CartScreen() {
       });
       return;
     }
-    console.log('Order saved successfully with ID:', saveOrderResult.data);
     const savedOrder = saveOrderResult.data;
 
     let paymentAttempts = 0;
@@ -252,10 +251,6 @@ export function CartScreen() {
           paymentAttempts < maxRetries
         ) {
           paymentAttempts++;
-          console.log(
-            `Retrying payment attempt ${paymentAttempts}/${maxRetries}`,
-          );
-
           // Show retry dialog
           showErrorDialog(
             'Payment Error',
@@ -490,11 +485,7 @@ export function CartScreen() {
 
     return (
       <View style={styles.row}>
-        {uri ? (
-          <Image source={{ uri }} style={styles.thumb} />
-        ) : (
-          <View style={styles.thumb} />
-        )}
+        <RemoteImage uri={uri} style={styles.thumb} resizeMode="contain" />
         <View style={styles.rowBody}>
           <Text style={styles.productName} numberOfLines={2}>
             {name}

@@ -4,7 +4,6 @@ import {
   Text,
   FlatList,
   Pressable,
-  Image,
   type ListRenderItem,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -19,6 +18,7 @@ import { useMessageDialog } from '../../../components/context/MessageDialogConte
 import styles from './OrderScreen.Style';
 import { OrderController } from '../controller';
 import { useOrderTracking } from '../../../components/context/OrderTrackingContext';
+import { RemoteImage } from '../../../components/ui/RemoteImage/RemoteImage';
 import {
   getOrderDisplayKey,
   getOrderUiStatus,
@@ -204,11 +204,11 @@ const OrderScreen = () => {
                   key={`${order.orderId}-img-${line.itemId ?? idx}`}
                   style={styles.thumbWrap}
                 >
-                  {uri ? (
-                    <Image source={{ uri }} style={styles.thumb} />
-                  ) : (
-                    <View style={[styles.thumb, styles.thumbPlaceholder]} />
-                  )}
+                  <RemoteImage
+                    uri={uri}
+                    style={styles.thumb}
+                    resizeMode="contain"
+                  />
                 </View>
               );
             })}
@@ -221,7 +221,9 @@ const OrderScreen = () => {
         </Pressable>
 
         <View style={styles.cardFooter}>
-          <Pressable onPress={() => navigation.navigate('OrderDetail', { order })}>
+          <Pressable
+            onPress={() => navigation.navigate('OrderDetail', { order })}
+          >
             <Text style={styles.totalText}>
               {RUPEE_SIGN}
               {(order.grandTotal ?? 0).toFixed(2)}

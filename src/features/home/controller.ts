@@ -87,7 +87,18 @@ export const homeController = {
 
   async fetchUserCarts() {
     try {
-      const userId = sessionStore.getState().user?.uid ?? 0;
+      let userId = Number(sessionStore.getState().user?.uid ?? 0);
+      if (!Number.isInteger(userId) || userId <= 0) {
+        await sessionStore.getState().loadSession();
+        userId = Number(sessionStore.getState().user?.uid ?? 0);
+      }
+      if (!Number.isInteger(userId) || userId <= 0) {
+        return {
+          status: FAILED,
+          data: null,
+          message: 'Unable to restore the current user session',
+        };
+      }
       const res = await homeService.fetchUserCarts(userId);
       if (res.status === SUCCESS) {
         const carts = (res?.data ?? []) as CartResponseModel[];

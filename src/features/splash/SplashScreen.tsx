@@ -20,9 +20,7 @@ async function loadRemoteConfigInBackground() {
   try {
     await SplashController.loadAppConfig();
     await SplashController.loadDeliveryCharges();
-  } catch (err) {
-    console.log('Background config load failed:', err);
-  }
+  } catch {}
 }
 
 export function SplashScreen({ navigation }: SplashScreenProps) {
@@ -51,8 +49,7 @@ export function SplashScreen({ navigation }: SplashScreenProps) {
       }
 
       navigation.replace('Auth');
-    } catch (err) {
-      console.log('Initialization error', err);
+    } catch {
       try {
         const permissionsRequested = await appPrefs.get('permissionsRequested');
         if (!permissionsRequested) {

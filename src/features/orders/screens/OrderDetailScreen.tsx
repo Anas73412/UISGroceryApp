@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, Pressable, Image } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
@@ -12,10 +12,8 @@ import { useMessageDialog } from '../../../components/context/MessageDialogConte
 import { useOrderTracking } from '../../../components/context/OrderTrackingContext';
 import { theme } from '../../../theme';
 import styles from './OrderDetailScreen.Style';
-import {
-  getOrderDisplayKey,
-  getOrderUiStatus,
-} from '../orderStatus';
+import { RemoteImage } from '../../../components/ui/RemoteImage/RemoteImage';
+import { getOrderDisplayKey, getOrderUiStatus } from '../orderStatus';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'OrderDetail'>;
 
@@ -113,11 +111,11 @@ function OrderDetailScreen({ route, navigation }: Props) {
               style={styles.itemCard}
               key={`${line.orderId}-${line.productId}-${idx}`}
             >
-              {uri ? (
-                <Image source={{ uri }} style={styles.itemThumb} />
-              ) : (
-                <View style={[styles.itemThumb, styles.itemThumbPlaceholder]} />
-              )}
+              <RemoteImage
+                uri={uri}
+                style={styles.itemThumb}
+                resizeMode="contain"
+              />
               <View style={styles.itemBody}>
                 <Text style={styles.itemName} numberOfLines={3}>
                   {line.productName?.trim() ||

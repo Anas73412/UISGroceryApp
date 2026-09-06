@@ -132,7 +132,6 @@ export function AddAddressScreen() {
     setLng(result.lng);
     setLocationAddress(result.address);
     setLocationPinCode(result.postalCode);
-    console.log('Resolved location:', result);
     if (result.postalCode) {
       setPincode(result.postalCode);
     }
@@ -144,7 +143,6 @@ export function AddAddressScreen() {
       distanceIndex ?? -1,
     );
     setRateId(locRateId);
-    console.log('Distance from store in KM:', locRateId);
   }, []);
 
   const tryFetchLocation = useCallback(async () => {
@@ -312,7 +310,9 @@ export function AddAddressScreen() {
     if (addressResponse.status === SUCCESS) {
       showSuccessDialog(
         'Success',
-        isEditing ? 'Address updated successfully' : 'Address added successfully',
+        isEditing
+          ? 'Address updated successfully'
+          : 'Address added successfully',
       );
     } else {
       showErrorDialog(
@@ -343,7 +343,9 @@ export function AddAddressScreen() {
         <View style={styles.container}>
           <Text style={styles.welcomeTitle}>DELIVARY DETAILS</Text>
           <Text style={styles.welcomeSubtitle}>
-            {isEditing ? 'Update your delivery address' : 'Where should we deliver?'}
+            {isEditing
+              ? 'Update your delivery address'
+              : 'Where should we deliver?'}
           </Text>
           <View style={{ height: 24 }} />
 

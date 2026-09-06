@@ -80,14 +80,6 @@ export const paymentService = {
       razorKeyId,
     });
 
-    if (__DEV__) {
-      console.log('[Payment] Opening Razorpay', {
-        amount: razorpayOptions.amount,
-        hasOrderId: 'order_id' in razorpayOptions,
-        keyPrefix: razorKeyId.slice(0, 12),
-      });
-    }
-
     try {
       const data = await RazorpayCheckout.open(razorpayOptions);
       return data as PaymentResponse;
@@ -154,7 +146,6 @@ export const paymentService = {
         API_ENDPOINTS.UPDATE_PAYMENT_STATUS,
         { ...request },
       );
-      console.log('[Payment] Payment status update response:', response.data);
       return mapResponse<string>(response);
     } catch (error) {
       return mapErrorResponse(error);

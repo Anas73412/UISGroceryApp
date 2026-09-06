@@ -8,7 +8,12 @@ import {
 import styles from './ProductScreen.Style';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../navigation/types';
-import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ProductModel } from '../../data/models/ProductModel';
 import { productController } from './controller';
@@ -46,10 +51,9 @@ export function ProductScreen() {
   const syncCartQuantitiesFromStore = useCallback(async () => {
     await cartStore.getState().loadFromDB();
     const qtyByProductId = new Map(
-      cartStore.getState().items.map(item => [
-        item.productId ?? 0,
-        item.quantity ?? 0,
-      ]),
+      cartStore
+        .getState()
+        .items.map(item => [item.productId ?? 0, item.quantity ?? 0]),
     );
 
     setProducts(prev => {
@@ -113,10 +117,6 @@ export function ProductScreen() {
         setPageNumber(page);
       }
     } catch (error: unknown) {
-      console.log(
-        'Error in paging products',
-        error instanceof Error ? error.message : error,
-      );
     } finally {
       hide();
       setIsLoadingMore(false);

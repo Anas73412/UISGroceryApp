@@ -5,7 +5,7 @@ import { DB_TABLES } from '../../utils/constants';
 function applyUserFields(record: UserModel, user: UserResponseModel) {
   record.name = user.name ?? '';
   record.mobile = user.mobile ?? '';
-  record.uid = user.id ?? 0;
+  record.uid = Number(user.id ?? 0);
   record.profile = user.profile ?? '';
   record.createdAt = user.created_at ?? undefined;
   record.isWifiUser = user.isWiFiUser ?? 0;
@@ -17,7 +17,7 @@ function applyUserFields(record: UserModel, user: UserResponseModel) {
 
 class UserRepository {
   async saveUserInDB(user: UserResponseModel) {
-    const uid = user.id ?? 0;
+    const uid = Number(user.id ?? 0);
     return database.write(async () => {
       const table = database.get(DB_TABLES.USER_TABLE);
       const existing = await table.query().fetch();
@@ -33,9 +33,7 @@ class UserRepository {
       }
 
       if (existing.length > 0) {
-        await Promise.all(
-          existing.map(record => record.destroyPermanently()),
-        );
+        await Promise.all(existing.map(record => record.destroyPermanently()));
       }
 
       return table.create(userModel => {

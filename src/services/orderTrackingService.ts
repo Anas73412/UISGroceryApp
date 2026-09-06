@@ -189,24 +189,12 @@ export function subscribeOrderTracking(
         void emit(
           snap.exists() ? (snap.data() as Partial<OrderTrackingModel>) : null,
         );
-        console.log(
-          '[Order Tracking] Updated tracking info for order:',
-          orderKey,
-        );
       },
       () => {
-        console.log(
-          '[Order Tracking] Error fetching tracking info for order:',
-          orderKey,
-        );
         // startPolling();
       },
     );
   } else {
-    console.log(
-      '[Order Tracking] Firebase not configured, falling back to polling for order:',
-      orderKey,
-    );
     // startPolling();
   }
 

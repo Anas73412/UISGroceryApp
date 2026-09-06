@@ -6,8 +6,6 @@ import {
   Pressable,
   ScrollView,
   TouchableOpacity,
-  Image,
-  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -23,6 +21,7 @@ import { sessionStore } from '../../../store/sessionStore';
 import { UserModel } from '../../../data/models/UserModel';
 import { IMAGE_BASE_URL } from '../../../utils/constants';
 import { isWiFiUserEnabled } from '../../../utils/userAccess';
+import { RemoteImage } from '../../../components/ui/RemoteImage/RemoteImage';
 type SettingOption = {
   id: string;
   icon: string;
@@ -88,7 +87,6 @@ export function SettingsScreen() {
   const { showConfirm } = useConfirmationDialog();
   const { showErrorDialog } = useMessageDialog();
   const [imageUri, setImageUri] = useState('');
-  const [isImageLoading, setIsImageLoading] = useState(true);
   useEffect(() => {
     const userDetails = sessionStore.getState().user;
     setUser(userDetails);
@@ -185,23 +183,11 @@ export function SettingsScreen() {
           <View style={styles.avatarWrapper}>
             <View style={styles.avatarPlaceholder}>
               {imageUri ? (
-                <>
-                  <Image
-                    source={{ uri: imageUri }}
-                    style={styles.image}
-                    resizeMode="contain"
-                    onLoadStart={() => setIsImageLoading(true)}
-                    onLoadEnd={() => setIsImageLoading(false)}
-                  />
-                  {isImageLoading && (
-                    <View style={styles.loaderOverlay}>
-                      <ActivityIndicator
-                        size="small"
-                        color={theme.colors.primary}
-                      />
-                    </View>
-                  )}
-                </>
+                <RemoteImage
+                  uri={imageUri}
+                  style={styles.image}
+                  resizeMode="contain"
+                />
               ) : (
                 <View style={styles.placeholderImage} />
               )}

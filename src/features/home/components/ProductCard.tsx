@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  Image,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { theme } from '../../../theme';
 import { QuantitySelector } from '../../../components/ui/QuantitySelector';
 import { IMAGE_BASE_URL, RUPEE_SIGN } from '../../../utils/constants';
@@ -17,6 +10,7 @@ import { sessionStore } from '../../../store/sessionStore';
 import { cartSyncService } from '../../cart/cartSyncService';
 import { useMessageDialog } from '../../../components/context/MessageDialogContext';
 import Toast from 'react-native-toast-message';
+import { RemoteImage } from '../../../components/ui/RemoteImage/RemoteImage';
 
 export interface CartProductModel {
   productId?: number;
@@ -58,9 +52,6 @@ export function ProductCard({
   discountPercent,
   categoryLabel,
 }: ProductCardProps) {
-  const [isImageLoading, setIsImageLoading] = useState(
-    !!(product.imageUrl || product.productImage),
-  );
   const [quantity, setQuantity] = useState(product.cartQuantity ?? 0);
   const { showErrorDialog, showSuccessDialog } = useMessageDialog();
   useEffect(() => {
@@ -76,6 +67,7 @@ export function ProductCard({
     : rawImage
     ? `${IMAGE_BASE_URL}${rawImage}`
     : '';
+
   const unit = product.unit ?? product.weight ?? '';
   const discount = discountPercent ?? product.discount ?? 0;
   const originalPrice = product.originalPrice;
@@ -173,7 +165,6 @@ export function ProductCard({
       });
       if (itemRes.cartId != 0) {
         product.cartId = itemRes.cartId;
-        console.log('CartId Updated..', itemRes.cartId);
       }
 
       await cartStore.getState().loadFromDB();
@@ -198,22 +189,13 @@ export function ProductCard({
           </View>
         )}
         {imageUri ? (
-          <>
-            <Image
-              source={{ uri: imageUri }}
-              style={styles.image}
-              resizeMode="contain"
-              onLoadStart={() => setIsImageLoading(true)}
-              onLoadEnd={() => setIsImageLoading(false)}
-            />
-            {isImageLoading && (
-              <View style={styles.loaderOverlay}>
-                <ActivityIndicator size="small" color={theme.colors.primary} />
-              </View>
-            )}
-          </>
+          <RemoteImage
+            uri={imageUri}
+            style={styles.image}
+            resizeMode="contain"
+          />
         ) : (
-          <View style={styles.placeholderImage} />
+          <RemoteImage style={styles.image} resizeMode="contain" />
         )}
       </View>
 
@@ -286,17 +268,6 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: 120,
-  },
-  loaderOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: theme.colors.surfaceSecondary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  placeholderImage: {
-    width: '100%',
-    height: 120,
-    backgroundColor: theme.colors.gray200,
   },
   badge: {
     position: 'absolute',

@@ -49,7 +49,6 @@ export function SearchScreen() {
       const res = await searchContoller.fetchProducts(pageNumber, 10);
 
       const pagingData = res?.data;
-      console.log('SearchData', res?.data);
       if (pagingData) {
         const newProducts = pagingData.products ?? [];
         setProducts(prev => (append ? [...prev, ...newProducts] : newProducts));
@@ -57,7 +56,6 @@ export function SearchScreen() {
         setHasMore(pageNumber < (pagingData.totalPages ?? 1));
       }
     } catch (error: any) {
-      console.log('Error in paging products', error.messsage);
       hide();
       setIsLoadingMore(false);
     } finally {

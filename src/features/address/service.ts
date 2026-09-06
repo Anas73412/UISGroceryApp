@@ -14,6 +14,7 @@ export const addressService = {
         API_ENDPOINTS.USER_ADDRESS_LIST,
         { userId },
       );
+
       return mapResponse<AddressResponseModel[]>(res);
     } catch (error) {
       return mapErrorResponse(error);

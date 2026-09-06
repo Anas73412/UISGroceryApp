@@ -61,15 +61,8 @@ export function PaymentFailureScreen() {
           paymentStatus: 'failed',
         });
         if (res.status !== SUCCESS) {
-          console.log(
-            '[Payment] Failed to update failure status:',
-            res.message,
-          );
         }
-        console.log('[Payment] Failure status update response:', res);
-      } catch (error) {
-        console.log('[Payment] Error while updating failure status:', error);
-      }
+      } catch (error) {}
     };
 
     syncFailedStatus();

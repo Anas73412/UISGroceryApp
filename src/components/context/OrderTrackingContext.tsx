@@ -75,9 +75,7 @@ export function OrderTrackingProvider({
     if (res.status !== SUCCESS || !Array.isArray(res.data)) return null;
     const found =
       res.data.find(
-        o =>
-          o.orderKey?.trim() === orderKey ||
-          String(o.orderId) === orderKey,
+        o => o.orderKey?.trim() === orderKey || String(o.orderId) === orderKey,
       ) ?? null;
     setCachedOrder(found);
     return found;
@@ -114,8 +112,7 @@ export function OrderTrackingProvider({
           const pending = res.data.find(o => getOrderUiStatus(o) === 'pending');
           if (pending) {
             await setActiveOrderForTracking(pending);
-            key =
-              pending.orderKey?.trim() || String(pending.orderId ?? '');
+            key = pending.orderKey?.trim() || String(pending.orderId ?? '');
             setCachedOrder(pending);
           }
         }
@@ -144,8 +141,7 @@ export function OrderTrackingProvider({
       await setActiveOrderForTracking(order);
       setSnackDismissed(false);
       setCachedOrder(order);
-      const key =
-        order.orderKey?.trim() || String(order.orderId ?? '');
+      const key = order.orderKey?.trim() || String(order.orderId ?? '');
       setActiveOrderKey(key);
       bindSubscription(key, order);
     },
@@ -184,18 +180,12 @@ export function OrderTrackingProvider({
     const ui = cachedOrder
       ? getOrderUiStatus(cachedOrder)
       : tracking.status === 3
-        ? 'delivered'
-        : tracking.status === 4
-          ? 'cancelled'
-          : 'pending';
+      ? 'delivered'
+      : tracking.status === 4
+      ? 'cancelled'
+      : 'pending';
     return ui === 'pending';
-  }, [
-    activeOrderKey,
-    cachedOrder,
-    focusedRouteName,
-    snackDismissed,
-    tracking,
-  ]);
+  }, [activeOrderKey, cachedOrder, focusedRouteName, snackDismissed, tracking]);
 
   const value: OrderTrackingContextValue = {
     activeOrderKey,

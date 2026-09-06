@@ -35,7 +35,6 @@ export const productRequestController = {
         payload,
         image,
       );
-      console.log('ProductReq', res);
       if (res.status === SUCCESS) {
         return res;
       }

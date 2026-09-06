@@ -1,13 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  ActivityIndicator,
-  Pressable,
-  FlatList,
-} from 'react-native';
+import { View, Text, ScrollView, Pressable, FlatList } from 'react-native';
 import {
   useNavigation,
   useRoute,
@@ -33,6 +25,7 @@ import { homeController } from '../home/controller';
 import { extractDataArray } from '../../utils/utils';
 import { cartSyncService } from '../cart/cartSyncService';
 import { useMessageDialog } from '../../components/context/MessageDialogContext';
+import { RemoteImage } from '../../components/ui/RemoteImage/RemoteImage';
 
 type ProductDetailRouteProp = RouteProp<
   HomeStackParamList,
@@ -45,8 +38,9 @@ export function ProductDetailScreen() {
   const { product: routeProduct } = route.params;
 
   const [product, setProduct] = useState(routeProduct);
-  const [cartQuantity, setCartQuantity] = useState(routeProduct.cartQuantity ?? 0);
-  const [isImageLoading, setIsImageLoading] = useState(!!routeProduct.productImage);
+  const [cartQuantity, setCartQuantity] = useState(
+    routeProduct.cartQuantity ?? 0,
+  );
   const [relatedProducts, setRelatedProducts] = useState<ProductModel[]>([]);
   const [sliders, setSliders] = useState<SliderModel[]>([]);
   const [cartQuantities, setCartQuantities] = useState<Record<number, number>>(
@@ -199,7 +193,10 @@ export function ProductDetailScreen() {
         showErrorDialog('Cart', res.message ?? 'Could not remove item');
         return;
       }
-      Toast.show({ type: 'success', text1: res.message ?? 'Removed from cart' });
+      Toast.show({
+        type: 'success',
+        text1: res.message ?? 'Removed from cart',
+      });
     } else {
       const cartModel = await buildCartModel(product, newQty);
       const res = await cartSyncService.addOrUpdate(cartModel, newQty);
@@ -251,27 +248,11 @@ export function ProductDetailScreen() {
         <BannerSlider sliders={sliders} />
 
         <View style={styles.imageContainer}>
-          {imageUri ? (
-            <>
-              <Image
-                source={{ uri: imageUri }}
-                style={styles.image}
-                resizeMode="contain"
-                onLoadStart={() => setIsImageLoading(true)}
-                onLoadEnd={() => setIsImageLoading(false)}
-              />
-              {isImageLoading && (
-                <View style={styles.loaderOverlay}>
-                  <ActivityIndicator
-                    size="small"
-                    color={theme.colors.primary}
-                  />
-                </View>
-              )}
-            </>
-          ) : (
-            <View style={styles.imagePlaceholder} />
-          )}
+          <RemoteImage
+            uri={imageUri}
+            style={styles.image}
+            resizeMode="contain"
+          />
         </View>
 
         <View style={styles.infoCard}>

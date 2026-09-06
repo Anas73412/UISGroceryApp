@@ -1,13 +1,11 @@
 import { splashService } from './service';
 import { SUCCESS, FAILED } from '../../utils/constants';
-import axios from 'axios';
 import ConfigRepository from '../../data/repositories/ConfigRepository';
 
 export const SplashController = {
   async loadAppConfig() {
     try {
       const res = await splashService.fetchAppConfig();
-
       if (res.status === SUCCESS && res.data && Array.isArray(res.data)) {
         await ConfigRepository.saveAllConfigs(res.data);
         return res;
@@ -18,16 +16,6 @@ export const SplashController = {
         };
       }
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log('Axios error details:', {
-          message: error.message,
-          code: error.code,
-          url: error.config?.url,
-        });
-      } else {
-        console.log('Non-axios error:', error);
-      }
-
       return {
         status: FAILED,
         message: (error as Error).message || 'Failed to load app configuration',
@@ -47,16 +35,6 @@ export const SplashController = {
         };
       }
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log('Axios error details:', {
-          message: error.message,
-          code: error.code,
-          url: error.config?.url,
-        });
-      } else {
-        console.log('Non-axios error:', error);
-      }
-
       return {
         status: FAILED,
         message: (error as Error).message || 'Failed to load delivery charges',

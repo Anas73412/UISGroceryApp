@@ -10,14 +10,17 @@ export async function clearAllSessionData(): Promise<boolean> {
   cartStore.getState().clearCart();
 
   try {
+    const currentPrefs = await appPrefs.getAll();
     await AuthRepository.clearToken();
     await appPrefs.setMany({
+      ...currentPrefs,
       cachedUserId: 0,
       selectedAddressId: 0,
       lattitude: null,
       longitude: null,
       activeOrderKey: null,
       activeOrderId: 0,
+      permissionsRequested: currentPrefs.permissionsRequested ?? false,
     });
     return await SettingRepository.clearAllLocalData();
   } catch (error) {

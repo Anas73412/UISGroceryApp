@@ -30,7 +30,6 @@ export const productController = {
             cartId: c.cartId,
           })),
         );
-        console.log('ProductRes', res);
         return res;
       }
       return {

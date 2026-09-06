@@ -37,19 +37,13 @@ export function PaymentSuccessScreen() {
           razorpayPaymentId: paymentId,
           paymentStatus: 'captured',
         });
-        if (res.status !== SUCCESS) {
-          console.log(
-            '[Payment] Failed to update success status:',
-            res.message,
-          );
-        }
         await appPrefs.set(PREF_KEYS.ACTIVE_ORDER_ID, orderId);
         await appPrefs.set(
           PREF_KEYS.ACTIVE_ORDER_KEY,
           orderKey?.toString() ?? '',
         );
-      } catch (error) {
-        console.log('[Payment] Error while updating success status:', error);
+      } catch {
+        // Payment status sync should not block order tracking setup.
       }
     };
 

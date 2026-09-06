@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text } from 'react-native';
 import type { ProductRequestModel } from '../../../data/models/ProductRequestModel';
 import {
   getProductRequestStatusBadge,
@@ -7,6 +7,7 @@ import {
 } from '../../../data/models/ProductRequestModel';
 import { IMAGE_BASE_URL } from '../../../utils/constants';
 import styles from '../MyProductRequestScreen.Style';
+import { RemoteImage } from '../../../components/ui/RemoteImage/RemoteImage';
 
 function formatRequestDate(value: string | number): string {
   const d = new Date(value);
@@ -46,11 +47,11 @@ export function RequestCard({ request }: RequestCardProps) {
     <View style={styles.card}>
       <View style={styles.cardTop}>
         <View style={styles.thumbWrap}>
-          {imageUri ? (
-            <Image source={{ uri: imageUri }} style={styles.thumb} />
-          ) : (
-            <View style={[styles.thumb, styles.thumbPlaceholder]} />
-          )}
+          <RemoteImage
+            uri={imageUri}
+            style={styles.thumb}
+            resizeMode="contain"
+          />
         </View>
 
         <View style={styles.cardBody}>

@@ -41,14 +41,22 @@ import { AxiosError } from 'axios';
 
 export const mapErrorResponse = <T>(error: unknown): ApiResponseModel<T> => {
   const axiosError = error as AxiosError<any>;
+  const status = axiosError?.response?.status;
+  const responseMessage = axiosError?.response?.data?.message;
+
+  console.error('Login API request failed:', {
+    status: status ?? 'no-response',
+    url: axiosError?.config?.url,
+    message: responseMessage ?? axiosError?.message,
+  });
 
   return {
-    code: axiosError?.response?.status ?? 500,
+    code: status ?? 503,
     status: FAILED,
     message:
-      axiosError?.response?.data?.message ??
+      responseMessage ??
       axiosError?.message ??
-      'Something went wrong',
+      'Development API is unavailable',
     data: null,
   };
 };

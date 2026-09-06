@@ -17,7 +17,6 @@ export const homeService = {
       const response = await apiClient.get<SliderResponseModel>(
         API_ENDPOINTS.GET_SLIDERS,
       );
-
       return mapResponse<SliderResponseModel>(response);
     } catch (error: any) {
       return mapErrorResponse(error);

@@ -2,22 +2,43 @@ import Keychain from 'react-native-keychain';
 type PrefMap = Record<string, unknown>;
 
 export class GenericPrefRepository<T extends PrefMap> {
+  private inMemoryBucket: Partial<T> | null = null;
+
   constructor(private readonly service: string, private readonly defaults: T) {}
 
   private async readBucket(): Promise<T> {
-    const cred = await Keychain.getGenericPassword({ server: this.service });
-    if (!cred) return this.defaults;
     try {
-      return { ...this.defaults, ...(JSON.parse(cred.password) as Partial<T>) };
+      const cred = await Keychain.getGenericPassword({ server: this.service });
+      if (cred) {
+        const parsed = JSON.parse(cred.password) as Partial<T>;
+        if (parsed && typeof parsed === 'object') {
+          this.inMemoryBucket = { ...this.defaults, ...parsed } as T;
+          return this.inMemoryBucket as T;
+        }
+      }
+
+      if (this.inMemoryBucket) {
+        return { ...this.defaults, ...this.inMemoryBucket } as T;
+      }
+
+      return this.defaults;
     } catch (error) {
+      if (this.inMemoryBucket) {
+        return { ...this.defaults, ...this.inMemoryBucket } as T;
+      }
       return this.defaults;
     }
   }
 
   private async writeBucket(data: T): Promise<void> {
-    await Keychain.setGenericPassword(this.service, JSON.stringify(data), {
-      server: this.service,
-    });
+    this.inMemoryBucket = { ...this.defaults, ...data };
+    await Keychain.setGenericPassword(
+      this.service,
+      JSON.stringify(this.inMemoryBucket),
+      {
+        server: this.service,
+      },
+    );
   }
 
   async set<K extends keyof T>(key: K, value: T[K]): Promise<void> {
@@ -41,6 +62,7 @@ export class GenericPrefRepository<T extends PrefMap> {
   }
 
   async clear(): Promise<void> {
+    this.inMemoryBucket = null;
     await Keychain.resetGenericPassword({ server: this.service });
   }
 }

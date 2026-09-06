@@ -141,7 +141,6 @@ export function PermissionsScreen({ navigation }: PermissionsScreenProps) {
 
       navigation.replace('Auth');
     } catch (err) {
-      console.log('Permissions routing error', err);
       navigation.replace('Auth');
     } finally {
       setRouting(false);
@@ -163,12 +162,7 @@ export function PermissionsScreen({ navigation }: PermissionsScreenProps) {
 
     return (
       <View key={card.key} style={styles.card}>
-        <View
-          style={[
-            styles.iconWrap,
-            isGranted && styles.iconWrapGranted,
-          ]}
-        >
+        <View style={[styles.iconWrap, isGranted && styles.iconWrapGranted]}>
           <MaterialIcons
             name={isGranted ? 'check' : card.icon}
             size={22}
@@ -179,15 +173,9 @@ export function PermissionsScreen({ navigation }: PermissionsScreenProps) {
         <View style={styles.cardContent}>
           <View style={styles.cardHeaderRow}>
             <Text style={styles.cardTitle}>{card.title}</Text>
-            {isGranted && (
-              <Text style={styles.statusGranted}>Allowed</Text>
-            )}
-            {isBlocked && (
-              <Text style={styles.statusBlocked}>Blocked</Text>
-            )}
-            {isUnavailable && (
-              <Text style={styles.statusInfo}>Later</Text>
-            )}
+            {isGranted && <Text style={styles.statusGranted}>Allowed</Text>}
+            {isBlocked && <Text style={styles.statusBlocked}>Blocked</Text>}
+            {isUnavailable && <Text style={styles.statusInfo}>Later</Text>}
           </View>
 
           <Text style={styles.cardBody}>{card.body}</Text>
@@ -203,10 +191,7 @@ export function PermissionsScreen({ navigation }: PermissionsScreenProps) {
                 </Pressable>
               ) : (
                 <Pressable
-                  style={[
-                    styles.allowBtn,
-                    isBusy && styles.allowBtnDisabled,
-                  ]}
+                  style={[styles.allowBtn, isBusy && styles.allowBtnDisabled]}
                   disabled={isBusy}
                   onPress={() => requestByKey(card.key)}
                 >

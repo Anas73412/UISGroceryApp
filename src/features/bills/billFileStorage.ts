@@ -12,7 +12,9 @@ function sanitizeFileName(fileName: string): string {
   return safe.toLowerCase().endsWith('.pdf') ? safe : `${safe}.pdf`;
 }
 
-export function getBillFileName(bill: Pick<BillDetailModel, 'billFile'>): string {
+export function getBillFileName(
+  bill: Pick<BillDetailModel, 'billFile'>,
+): string {
   const raw = bill.billFile?.trim();
   if (!raw) {
     throw new Error('Bill file name is missing.');
@@ -20,7 +22,9 @@ export function getBillFileName(bill: Pick<BillDetailModel, 'billFile'>): string
   return sanitizeFileName(raw);
 }
 
-export function getLocalBillPath(bill: Pick<BillDetailModel, 'billFile'>): string {
+export function getLocalBillPath(
+  bill: Pick<BillDetailModel, 'billFile'>,
+): string {
   return `${BILLS_FOLDER}/${getBillFileName(bill)}`;
 }
 
@@ -53,7 +57,6 @@ export async function downloadBill(
   await ensureBillsFolder();
   const localPath = getLocalBillPath(bill);
   const remoteUrl = getRemoteBillUrl(bill.billFile!);
-
   const result = await RNFS.downloadFile({
     fromUrl: remoteUrl,
     toFile: localPath,

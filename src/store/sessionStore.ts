@@ -15,6 +15,11 @@ interface SessionStore {
   clearSession: () => void;
 }
 
+function getValidUserId(user: UserModel | null): number {
+  const userId = Number(user?.uid ?? 0);
+  return Number.isInteger(userId) && userId > 0 ? userId : 0;
+}
+
 export const sessionStore = create<SessionStore>(set => ({
   user: null,
   token: null,
@@ -30,9 +35,9 @@ export const sessionStore = create<SessionStore>(set => ({
 
       let user = await UserRepository.getCurrentUser();
 
-      if (!user) {
-        const cachedUserId = await appPrefs.get('cachedUserId');
-        if (cachedUserId > 0) {
+      if (!user || getValidUserId(user) === 0) {
+        const cachedUserId = Number(await appPrefs.get('cachedUserId'));
+        if (Number.isInteger(cachedUserId) && cachedUserId > 0) {
           const res = await profileService.getUserDetails(cachedUserId);
           if (res.status === SUCCESS && res.data) {
             await UserRepository.saveUserInDB(res.data);
@@ -41,7 +46,7 @@ export const sessionStore = create<SessionStore>(set => ({
         }
       }
 
-      if (user) {
+      if (user && getValidUserId(user) > 0) {
         set({
           user,
           token: credentials.token,
@@ -60,12 +65,12 @@ export const sessionStore = create<SessionStore>(set => ({
   },
 
   setSession: (user, token) => {
-    if (user?.uid) {
-      void appPrefs.set('cachedUserId', user.uid);
+    const userId = getValidUserId(user);
+    if (userId > 0) {
+      void appPrefs.set('cachedUserId', userId);
     }
     set({ user, token, isLoaded: true });
   },
 
-  clearSession: () =>
-    set({ user: null, token: null, isLoaded: true }),
+  clearSession: () => set({ user: null, token: null, isLoaded: true }),
 }));

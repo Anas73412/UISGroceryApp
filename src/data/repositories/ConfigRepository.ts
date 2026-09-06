@@ -58,7 +58,6 @@ class ConfigRepository {
       for (const charge of charges) {
         await table.create(record => {
           const newCharge = record as DeliveryChargesModel;
-          console.log('Saving delivery charge:', charge);
           newCharge.uId = charge.uId;
           newCharge.amount = charge.amount;
           newCharge.distance = charge.distance;

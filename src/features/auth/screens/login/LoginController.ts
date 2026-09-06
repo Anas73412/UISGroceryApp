@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { FAILED, SUCCESS } from '../../../../utils/constants';
 import { loginService } from './service';
 import UserRepository from '../../../../data/repositories/UserRepository';
@@ -10,7 +9,6 @@ export const LoginController = {
   async loginUser(email: string, password: string) {
     try {
       const res = await loginService.loginUser(email, password);
-
       if (res.status === SUCCESS && res.data) {
         await UserRepository.saveUserInDB(res.data);
         await AuthRepository.saveToken(res.data.mobile, res.data.password);
@@ -25,16 +23,6 @@ export const LoginController = {
         };
       }
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log('Axios error details:', {
-          message: error.message,
-          code: error.code,
-          url: error.config?.url,
-        });
-      } else {
-        console.log('Non-axios error:', error);
-      }
-
       return {
         status: FAILED,
         message: (error as Error).message || 'Failed to load app configuration',

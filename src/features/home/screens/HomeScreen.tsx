@@ -96,10 +96,9 @@ export function HomeScreen() {
   const syncCartQuantitiesFromStore = useCallback(async () => {
     await cartStore.getState().loadFromDB();
     const qtyByProductId = new Map(
-      cartStore.getState().items.map(item => [
-        item.productId ?? 0,
-        item.quantity ?? 0,
-      ]),
+      cartStore
+        .getState()
+        .items.map(item => [item.productId ?? 0, item.quantity ?? 0]),
     );
 
     setProducts(prev => {
@@ -128,7 +127,6 @@ export function HomeScreen() {
 
   const updateAddressUI = async () => {
     const selectedAddressId = await appPrefs.get('selectedAddressId');
-    console.log('Selected Address ID from prefs:', selectedAddressId);
     if (selectedAddressId >= 0) {
       const selectedAddressItem = addressList?.find(
         add => add.addressId === selectedAddressId,
@@ -205,7 +203,6 @@ export function HomeScreen() {
         setHasMore(pageNumber < (pagingData.totalPages ?? 1));
       }
     } catch (error: any) {
-      console.log('Error in paging products', error.messsage);
       hide();
       setIsLoadingMore(false);
     } finally {
