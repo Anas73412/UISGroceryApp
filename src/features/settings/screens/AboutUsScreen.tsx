@@ -1,11 +1,54 @@
-import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  View,
+  Text,
+  ScrollView,
+} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { AppHeader } from '../../../components/ui';
 import { theme } from '../../../theme';
 import { staticScreenStyles as s } from '../settingsStaticScreens.styles';
+import { settingsService } from '../service';
 
 export function AboutUsScreen() {
+  const [page, setPage] = useState<{
+    title: string;
+    description: string;
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const loadAboutUs = useCallback(async () => {
+    setIsLoading(true);
+    setErrorMessage('');
+
+    try {
+      const response = await settingsService.fetchAboutUs();
+      console.log('About Us response:', response);
+      if (!response.data) {
+        setPage(null);
+        setErrorMessage(response.message || 'Could not load About Us.');
+        return;
+      }
+
+      setPage({
+        title: response.data.title?.trim() || 'About us',
+        description: response.data.description?.trim() || '',
+      });
+    } catch {
+      setPage(null);
+      setErrorMessage('Could not load About Us.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAboutUs();
+  }, [loadAboutUs]);
+
   return (
     <View style={s.container}>
       <AppHeader title="About us" showCartIcon={false} />
@@ -24,64 +67,21 @@ export function AboutUsScreen() {
                 color={theme.colors.primary}
               />
             </View>
-            <Text style={s.appName}>GroceryApp</Text>
-            <Text style={s.tagline}>
-              Your trusted store for quality groceries, delivered fresh. We
-              connect you with the products you need for a healthier, easier
-              day.
-            </Text>
-          </View>
-        </View>
-
-        <View style={s.card}>
-          <Text style={s.sectionLabel}>What we do</Text>
-          <Text style={s.bodyText}>
-            We work with reliable suppliers to bring you fresh produce,
-            household essentials, and specialty items. Our goal is a simple
-            shopping experience: browse, order, and enjoy.
-          </Text>
-        </View>
-
-        <View style={s.card}>
-          <Text style={s.sectionLabel}>Our values</Text>
-          <View style={[s.valueRow, s.valueRowFirst]}>
-            <View style={s.valueIcon}>
-              <MaterialIcons
-                name="eco"
-                size={22}
-                color={theme.colors.primary}
-              />
-            </View>
-            <View style={s.valueTextCol}>
-              <Text style={s.valueLabel}>Quality & freshness</Text>
-              <Text style={s.valueValue}>Sourced and packed with care</Text>
-            </View>
-          </View>
-          <View style={s.valueRow}>
-            <View style={s.valueIcon}>
-              <MaterialIcons
-                name="groups"
-                size={22}
-                color={theme.colors.primary}
-              />
-            </View>
-            <View style={s.valueTextCol}>
-              <Text style={s.valueLabel}>People first</Text>
-              <Text style={s.valueValue}>Support that listens to you</Text>
-            </View>
-          </View>
-          <View style={[s.valueRow, { borderBottomWidth: 0 }]}>
-            <View style={s.valueIcon}>
-              <MaterialIcons
-                name="verified"
-                size={22}
-                color={theme.colors.primary}
-              />
-            </View>
-            <View style={s.valueTextCol}>
-              <Text style={s.valueLabel}>Trust</Text>
-              <Text style={s.valueValue}>Clear prices & secure experience</Text>
-            </View>
+            {isLoading ? (
+              <ActivityIndicator color={theme.colors.primary} />
+            ) : errorMessage ? (
+              <>
+                <Text style={s.bodyText}>{errorMessage}</Text>
+                <Pressable onPress={loadAboutUs}>
+                  <Text style={s.sectionLabel}>Retry</Text>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <Text style={s.appName}>{page?.title}</Text>
+                <Text style={s.tagline}>{page?.description}</Text>
+              </>
+            )}
           </View>
         </View>
 

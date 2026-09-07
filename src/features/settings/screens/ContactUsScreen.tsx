@@ -95,7 +95,7 @@ const mapToContactCard = (item: ContactApiItem): ContactCardItem | null => {
   }
 
   return {
-    id: `${kind}-${item.id}`,
+    id: `${kind}-${item.pageId}`,
     kind,
     label: kind === 'phone' ? 'Phone number' : 'Email address',
     value,
@@ -113,7 +113,6 @@ export function ContactUsScreen() {
     setErrorMessage('');
 
     const response = await settingsService.fetchContactDetails();
-
     if (!response.data) {
       setContactItems([]);
       setErrorMessage(response.message || 'Could not load contact details.');
@@ -121,7 +120,7 @@ export function ContactUsScreen() {
       return;
     }
 
-    const mappedItems = response.data
+    const mappedItems = [response.data]
       .map(mapToContactCard)
       .filter((item): item is ContactCardItem => item !== null);
 

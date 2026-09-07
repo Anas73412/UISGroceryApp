@@ -62,6 +62,7 @@ export const profileController = {
 
   async fetchUserProfile() {
     try {
+      console.log('Fetching user profile...');
       const userId = sessionStore.getState().user?.uid ?? 0;
       if (userId === 0) {
         return {
