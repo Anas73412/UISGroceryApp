@@ -28,6 +28,7 @@ import {
 import { extractDataArray } from '../../../utils/utils';
 import { SliderBanner } from '../../../components/ui/Slider/SliderBanner';
 import { useLoading } from '../../../components/context/LoadingContext';
+import { usePullToRefresh } from '../../../components/ui';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { CategoryModel } from '../../../data/models/CategoryModel';
 import { ProductModel } from '../../../data/models/ProductModel';
@@ -43,15 +44,25 @@ import { sessionStore } from '../../../store/sessionStore';
 import { isWiFiUserEnabled } from '../../../utils/userAccess';
 import { WiFiDashboardSections } from '../components/WiFiDashboardSections';
 import { buildWiFiDashboardData } from '../components/wifiDashboardData';
+import { newsStore } from '../../news/store';
+import { ottStore } from '../../ott/store';
+import { OttChannelsHomeSection } from '../../ott/components/OttChannelsHomeSection';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
   'HomeScreen'
 >;
 
+const HOME_PRODUCT_PAGE_SIZE = 10;
+const HOME_PRODUCT_MAX_PAGES = 2;
+
 export function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const user = sessionStore(state => state.user);
+  const unreadNewsCount = newsStore(state => state.unreadCount);
+  const refreshUnreadCount = newsStore(state => state.refreshUnreadCount);
+  const ottChannels = ottStore(state => state.items);
+  const loadOttChannels = ottStore(state => state.load);
   const showWifiDashboard = isWiFiUserEnabled(user);
   const wifiDashboardData = useMemo(() => buildWiFiDashboardData(user), [user]);
   const [products, setProducts] = React.useState<ProductModel[]>([]);
@@ -122,7 +133,14 @@ export function HomeScreen() {
     React.useCallback(() => {
       updateAddressUI();
       void syncCartQuantitiesFromStore();
-    }, [addressList, syncCartQuantitiesFromStore]),
+      void refreshUnreadCount();
+      void loadOttChannels();
+    }, [
+      addressList,
+      syncCartQuantitiesFromStore,
+      refreshUnreadCount,
+      loadOttChannels,
+    ]),
   );
 
   const updateAddressUI = async () => {
@@ -161,9 +179,11 @@ export function HomeScreen() {
     };
   }, [sliders.length]);
 
-  const loadAllData = async () => {
+  const loadAllData = async (options?: { silent?: boolean }) => {
     try {
-      show('Loading...');
+      if (!options?.silent) {
+        show('Loading...');
+      }
       const res = await homeController.fetchSliders();
       const sliderData = extractDataArray<SliderModel>(res.data);
       const catRes = await homeController.fetchCategories();
@@ -176,43 +196,75 @@ export function HomeScreen() {
       setCategories(categories);
       await syncCartQuantitiesFromStore();
 
-      hide();
+      if (!options?.silent) {
+        hide();
+      }
     } catch (error) {
-      hide();
+      if (!options?.silent) {
+        hide();
+      }
     } finally {
-      hide();
+      if (!options?.silent) {
+        hide();
+      }
     }
   };
 
-  const loadProducts = async (pageNumber: number, append: boolean = false) => {
-    if (pageNumber == 1) show('Loading...');
-    else setIsLoadingMore(true);
+  const loadProducts = async (
+    pageNumber: number,
+    append: boolean = false,
+    options?: { silent?: boolean },
+  ) => {
+    if (pageNumber > HOME_PRODUCT_MAX_PAGES) {
+      setHasMore(false);
+      return;
+    }
+
+    if (pageNumber == 1 && !options?.silent) show('Loading...');
+    else if (pageNumber != 1) setIsLoadingMore(true);
 
     try {
       const res = await homeController.fetchNewlyAddedProducts(
         0,
         pageNumber,
-        10,
+        HOME_PRODUCT_PAGE_SIZE,
       );
 
       const pagingData = res?.data;
       if (pagingData) {
         const newProducts = pagingData.products ?? [];
         setProducts(prev => (append ? [...prev, ...newProducts] : newProducts));
-        setTotalPages(pagingData.totalPages ?? 1);
-        setHasMore(pageNumber < (pagingData.totalPages ?? 1));
+        setPageNumber(pageNumber);
+        const apiTotalPages = pagingData.totalPages ?? 1;
+        const cappedTotalPages = Math.min(
+          apiTotalPages,
+          HOME_PRODUCT_MAX_PAGES,
+        );
+        setTotalPages(cappedTotalPages);
+        setHasMore(pageNumber < cappedTotalPages);
       }
     } catch (error: any) {
-      hide();
+      if (!options?.silent) hide();
       setIsLoadingMore(false);
     } finally {
-      hide();
+      if (!options?.silent) hide();
       setIsLoadingMore(false);
     }
   };
 
+  const handlePullRefresh = async () => {
+    await Promise.all([loadAllData({ silent: true }), loadOttChannels()]);
+  };
+
+  const { refreshControl } = usePullToRefresh(handlePullRefresh);
+
   const handleLoadMore = () => {
-    if (!isLoadingMore && hasMore && pageNumber < totalPages) {
+    if (
+      !isLoadingMore &&
+      hasMore &&
+      pageNumber < totalPages &&
+      pageNumber < HOME_PRODUCT_MAX_PAGES
+    ) {
       const nextPage = pageNumber + 1;
       setPageNumber(nextPage);
       loadProducts(nextPage, true);
@@ -231,6 +283,14 @@ export function HomeScreen() {
     navigation.navigate('MyBills');
   }, [navigation]);
 
+  const navigateToNews = useCallback(() => {
+    navigation.navigate('News');
+  }, [navigation]);
+
+  const navigateToOttChannels = useCallback(() => {
+    navigation.navigate('OttChannels');
+  }, [navigation]);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -240,6 +300,7 @@ export function HomeScreen() {
           numColumns={2}
           columnWrapperStyle={styles.productRow}
           contentContainerStyle={styles.listContent}
+          refreshControl={refreshControl}
           ListHeaderComponent={
             <>
               <View style={styles.topRow}>
@@ -270,12 +331,25 @@ export function HomeScreen() {
                     />
                   </View>
                 </Pressable>
-                <Pressable style={styles.bellButton}>
+                <Pressable
+                  style={styles.bellButton}
+                  onPress={navigateToNews}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="News"
+                >
                   <MaterialIcons
                     name="notifications-none"
                     size={22}
                     color={theme.colors.gray800}
                   />
+                  {unreadNewsCount > 0 ? (
+                    <View style={styles.newsBadge}>
+                      <Text style={styles.newsBadgeText}>
+                        {unreadNewsCount > 99 ? '99+' : unreadNewsCount}
+                      </Text>
+                    </View>
+                  ) : null}
                 </Pressable>
               </View>
               <Pressable
@@ -369,7 +443,10 @@ export function HomeScreen() {
                   />
                 )}
               />
-
+              <OttChannelsHomeSection
+                items={ottChannels}
+                onViewAll={navigateToOttChannels}
+              />
               <View style={styles.sectionHeaderRow}>
                 <View style={styles.sectionTitleRow}>
                   <Text style={styles.sectionTitle}>Newly Added Products</Text>

@@ -68,6 +68,9 @@ export type HomeStackParamList = {
   HomeDeliveryAddress: undefined;
   MyBills: undefined;
   AddAddress: AddAddressRouteParams;
+  News: undefined;
+  NewsDetails: { newsId: number };
+  OttChannels: undefined;
 };
 
 export type SettingsStackParamList = {
@@ -83,6 +86,8 @@ export type SettingsStackParamList = {
   MyComplaints: undefined;
   AddComplain: undefined;
   AddAddress: AddAddressRouteParams;
+  News: undefined;
+  NewsDetails: { newsId: number };
 };
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;

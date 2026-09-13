@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import styles from './SearchScreen.Style';
-import { AppHeader } from '../../components/ui';
+import { AppHeader, usePullToRefresh } from '../../components/ui';
 import { theme } from '../../theme';
 import { ProductCard } from '../home/components/ProductCard';
 
@@ -41,9 +41,13 @@ export function SearchScreen() {
     loadProducts(1, false);
   }, []);
 
-  const loadProducts = async (pageNumber: number, append: boolean = false) => {
-    if (pageNumber == 1) show('Loading...');
-    else setIsLoadingMore(true);
+  const loadProducts = async (
+    pageNumber: number,
+    append: boolean = false,
+    options?: { silent?: boolean },
+  ) => {
+    if (pageNumber == 1 && !options?.silent) show('Loading...');
+    else if (pageNumber != 1) setIsLoadingMore(true);
 
     try {
       const res = await searchContoller.fetchProducts(pageNumber, 10);
@@ -56,10 +60,10 @@ export function SearchScreen() {
         setHasMore(pageNumber < (pagingData.totalPages ?? 1));
       }
     } catch (error: any) {
-      hide();
+      if (!options?.silent) hide();
       setIsLoadingMore(false);
     } finally {
-      hide();
+      if (!options?.silent) hide();
       setIsLoadingMore(false);
     }
   };
@@ -89,6 +93,12 @@ export function SearchScreen() {
     return products.filter(p => p.productName?.toLowerCase().includes(q));
   }, [products, searchQuery]);
 
+  const handlePullRefresh = useCallback(async () => {
+    await loadProducts(1, false, { silent: true });
+  }, []);
+
+  const { refreshControl } = usePullToRefresh(handlePullRefresh);
+
   return (
     <View style={styles.container}>
       <AppHeader title="Search Product" />
@@ -109,6 +119,7 @@ export function SearchScreen() {
         numColumns={2}
         columnWrapperStyle={styles.productRow}
         contentContainerStyle={styles.listContent}
+        refreshControl={refreshControl}
         renderItem={({ item }) => {
           const productWithQty: ProductModel = {
             ...item,

@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  RefreshControl,
   SafeAreaView,
   ScrollView,
   Text,
@@ -17,6 +16,7 @@ import { RemoteImage } from '../../../components/ui/RemoteImage/RemoteImage';
 import styles from './PlanScreen.Style';
 import type { PlanModel } from '../../../data/models/PlanModel';
 import { planService } from '../service';
+import { usePullToRefresh } from '../../../components/ui';
 
 export function PlanScreen() {
   const user = sessionStore(state => state.user);
@@ -48,6 +48,12 @@ export function PlanScreen() {
   useEffect(() => {
     void loadPlans();
   }, []);
+
+  const handlePullRefresh = async () => {
+    await loadPlans(true);
+  };
+
+  const { refreshControl } = usePullToRefresh(handlePullRefresh);
 
   const visiblePlans = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -195,13 +201,7 @@ export function PlanScreen() {
       <ScrollView
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={() => void loadPlans(true)}
-            tintColor={theme.colors.primary}
-          />
-        }
+        refreshControl={refreshControl}
       >
         <View style={styles.header}>
           <View style={styles.headerIcon}>

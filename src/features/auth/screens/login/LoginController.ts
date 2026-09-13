@@ -9,12 +9,12 @@ export const LoginController = {
   async loginUser(email: string, password: string) {
     try {
       const res = await loginService.loginUser(email, password);
-      if (res.status === SUCCESS && res.data) {
+      if (res.status === SUCCESS && res.data && res.data.token) {
         await UserRepository.saveUserInDB(res.data);
-        await AuthRepository.saveToken(res.data.mobile, res.data.password);
+        await AuthRepository.saveToken(res.data.mobile, res.data.token);
         await appPrefs.set('cachedUserId', res.data.id ?? 0);
         const user = await UserRepository.getCurrentUser();
-        sessionStore.getState().setSession(user, res.data.password);
+        sessionStore.getState().setSession(user, res.data.token);
         return res;
       } else {
         return {

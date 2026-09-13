@@ -9,6 +9,9 @@ import { SearchScreen } from '../features/search/SearchScreen';
 import { AddressScreen } from '../features/address/AddressScreen';
 import { AddAddressScreen } from '../features/address/AddAddressScreen';
 import { BillsScreen } from '../features/bills/BillsScreen';
+import { NewsScreen } from '../features/news/NewsScreen';
+import { NewsDetailsScreen } from '../features/news/NewsDetailsScreen';
+import { OttChannelsScreen } from '../features/ott/OttChannelsScreen';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -26,6 +29,9 @@ export function HomeStackNavigator() {
         name="ProductDetailScreen"
         component={ProductDetailScreen}
       />
+      <Stack.Screen name="News" component={NewsScreen} />
+      <Stack.Screen name="NewsDetails" component={NewsDetailsScreen} />
+      <Stack.Screen name="OttChannels" component={OttChannelsScreen} />
     </Stack.Navigator>
   );
 }

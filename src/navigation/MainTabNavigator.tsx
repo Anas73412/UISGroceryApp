@@ -29,6 +29,8 @@ const HIDE_TAB_BAR_ROUTES = [
   'OrderTracking',
   'PaymentSuccess',
   'PaymentFailure',
+  'News',
+  'NewsDetails',
 ];
 export function MainTabNavigator() {
   const user = sessionStore(state => state.user);
@@ -97,6 +99,8 @@ export function MainTabNavigator() {
             'OrderTracking',
             'MyComplaints',
             'AddComplain',
+            'News',
+            'NewsDetails',
           ];
           const shouldHideBottomBar = settingsHideRoutes.includes(routeName);
           return {

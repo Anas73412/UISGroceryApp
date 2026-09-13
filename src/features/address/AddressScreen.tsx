@@ -17,7 +17,7 @@ import {
 import { useConfirmationDialog } from '../../components/context/ConfirmationDialogContext';
 import { useLoading } from '../../components/context/LoadingContext';
 import { useMessageDialog } from '../../components/context/MessageDialogContext';
-import { AppHeader } from '../../components/ui';
+import { AppHeader, usePullToRefresh } from '../../components/ui';
 import { appPrefs } from '../../data/repositories/AppPrefRepository';
 import { sessionStore } from '../../store/sessionStore';
 import { theme } from '../../theme';
@@ -199,6 +199,13 @@ export function AddressScreen() {
     });
   };
 
+
+  const handlePullRefresh = useCallback(async () => {
+    await loadAddressList();
+  }, [loadAddressList]);
+
+  const { refreshControl } = usePullToRefresh(handlePullRefresh);
+
   return (
     <View style={styles.container}>
       <AppHeader title="Delivery Address" showCartIcon={false} />
@@ -231,6 +238,7 @@ export function AddressScreen() {
         data={addressList}
         keyExtractor={item => String(item.addressId)}
         contentContainerStyle={styles.listContent}
+        refreshControl={refreshControl}
         renderItem={({ item }) => {
           const isSelected = item.addressId === defaultAddressId;
           return (

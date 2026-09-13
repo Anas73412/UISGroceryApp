@@ -19,7 +19,7 @@ import styles from './CartScreen.Style';
 import { theme } from '../../theme';
 import { IMAGE_BASE_URL, RUPEE_SIGN, SUCCESS } from '../../utils/constants';
 import { QuantitySelector } from '../../components/ui/QuantitySelector';
-import { AppHeader } from '../../components/ui';
+import { AppHeader, usePullToRefresh } from '../../components/ui';
 import { cartStore } from '../../store/cartStore';
 import { CartResponseModel } from '../../data/models/CartModel';
 import { ProductModel } from '../../data/models/ProductModel';
@@ -510,6 +510,12 @@ export function CartScreen() {
     );
   };
 
+  const handlePullRefresh = useCallback(async () => {
+    await refetchCartFromApi();
+  }, [refetchCartFromApi]);
+
+  const { refreshControl } = usePullToRefresh(handlePullRefresh);
+
   const handleRetryCart = useCallback(async () => {
     setListLoading(true);
     setCartError(null);
@@ -569,6 +575,7 @@ export function CartScreen() {
         keyExtractor={item => `${item.cartId ?? 0}-${item.productId ?? 0}`}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
+        refreshControl={refreshControl}
         ListHeaderComponent={<>{AddressHeader}</>}
         ListEmptyComponent={
           cartError ? (

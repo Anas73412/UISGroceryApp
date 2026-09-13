@@ -1,14 +1,26 @@
 import axios, { type AxiosRequestConfig, type Method } from 'axios';
+import AuthRepository from '../data/repositories/AuthRepository';
 
 //const BASE_URL = 'https://demo.unitedinternetservice.in';
 //const BASE_URL = 'http://10.0.2.2:5000';
-const BASE_URL = 'http://192.168.0.109:5000';
+const BASE_URL = 'http://192.168.1.39:5000';
 
 interface RequestConfig {
   method?: Method;
   body?: unknown;
   headers?: Record<string, string>;
   responseType?: 'json' | 'text';
+}
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const token = await AuthRepository.getToken();
+  if (!token) {
+    return {};
+  }
+
+  return {
+    Authorization: `Bearer ${token}`,
+  };
 }
 
 async function request<T>(
@@ -19,12 +31,14 @@ async function request<T>(
 
   const isAbsoluteURL = /^https?:\/\//i.test(path);
   const url = isAbsoluteURL ? path : `${BASE_URL}${path}`;
+  const authHeaders = await getAuthHeaders();
 
   const axiosConfig: AxiosRequestConfig = {
     url,
     method,
     headers: {
       'Content-Type': 'application/json',
+      ...authHeaders,
       ...headers,
     },
     data: body,

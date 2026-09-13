@@ -69,6 +69,23 @@ const styles = StyleSheet.create({
   bellIcon: {
     color: theme.colors.gray800,
   },
+  newsBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: theme.colors.error,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  newsBadgeText: {
+    color: theme.colors.white,
+    fontSize: 10,
+    fontWeight: '700',
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',

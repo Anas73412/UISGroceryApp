@@ -42,6 +42,11 @@ export const API_ENDPOINTS = {
   UPDATE_PASSWORD: `${SUB_PATH}/updatePassword`,
   ABOUT_US: `${SUB_PATH}/aboutUs`,
   PRIVACY_POLICY: `${SUB_PATH}/privacyPolicy`,
+  NEWS: `${SUB_PATH}/getAllUserWiseNews`,
+  NEWS_UNREAD_COUNT: `${SUB_PATH}/getNewsUnreadCount`,
+  NEWS_DETAILS: `${SUB_PATH}/getNewsDetails`,
+  MARK_NEWS_READ: `${SUB_PATH}/markNewsRead`,
+  ALL_OTT_CHANNELS: `${SUB_PATH}/getOttChannels`,
 };
 
 export const { width: SCREEN_WIDTH } = Dimensions.get('window');

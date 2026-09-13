@@ -12,7 +12,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppHeader } from '../../components/ui';
+import { AppHeader, usePullToRefresh } from '../../components/ui';
 import { useConfirmationDialog } from '../../components/context/ConfirmationDialogContext';
 import { useLoading } from '../../components/context/LoadingContext';
 import { useMessageDialog } from '../../components/context/MessageDialogContext';
@@ -36,37 +36,50 @@ export function BillsScreen() {
   const [bills, setBills] = useState<BillItem[]>([]);
   const [listLoading, setListLoading] = useState(true);
 
-  const loadBills = useCallback(async () => {
-    setListLoading(true);
-    show('Loading bills...');
-    try {
-      const res = await billController.fetchBillList();
-      if (res.status === SUCCESS) {
-        setBills(mapBillListToItems(res.data ?? []));
-      } else {
+  const loadBills = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (!options?.silent) {
+        setListLoading(true);
+        show('Loading bills...');
+      }
+      try {
+        const res = await billController.fetchBillList();
+        if (res.status === SUCCESS) {
+          setBills(mapBillListToItems(res.data ?? []));
+        } else {
+          setBills([]);
+          showErrorDialog(
+            'Unable to load bills',
+            res.message || 'Could not fetch your bills.',
+          );
+        }
+      } catch {
         setBills([]);
         showErrorDialog(
           'Unable to load bills',
-          res.message || 'Could not fetch your bills.',
+          'Could not fetch your bills. Please try again.',
         );
+      } finally {
+        if (!options?.silent) {
+          hide();
+          setListLoading(false);
+        }
       }
-    } catch {
-      setBills([]);
-      showErrorDialog(
-        'Unable to load bills',
-        'Could not fetch your bills. Please try again.',
-      );
-    } finally {
-      hide();
-      setListLoading(false);
-    }
-  }, [hide, show, showErrorDialog]);
+    },
+    [hide, show, showErrorDialog],
+  );
 
   useFocusEffect(
     useCallback(() => {
       void loadBills();
     }, [loadBills]),
   );
+
+  const handlePullRefresh = useCallback(async () => {
+    await loadBills({ silent: true });
+  }, [loadBills]);
+
+  const { refreshControl } = usePullToRefresh(handlePullRefresh);
 
   const handlePdfPress = useCallback(
     (bill: BillItem) => {
@@ -123,6 +136,7 @@ export function BillsScreen() {
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={refreshControl}
           ListEmptyComponent={renderEmpty}
         />
       </View>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { theme } from '../../../theme';
 import { QuantitySelector } from '../../../components/ui/QuantitySelector';
@@ -43,7 +43,7 @@ type ProductCardProps = {
   categoryLabel?: string;
 };
 
-export function ProductCard({
+function ProductCardComponent({
   product,
   onPress,
   onAddToCart,
@@ -243,6 +243,33 @@ export function ProductCard({
     </Pressable>
   );
 }
+
+function areProductCardPropsEqual(
+  prev: ProductCardProps,
+  next: ProductCardProps,
+): boolean {
+  const a = prev.product;
+  const b = next.product;
+  return (
+    a.productId === b.productId &&
+    a.cartQuantity === b.cartQuantity &&
+    a.productName === b.productName &&
+    a.name === b.name &&
+    a.sellingPrice === b.sellingPrice &&
+    a.price === b.price &&
+    a.productImage === b.productImage &&
+    a.imageUrl === b.imageUrl &&
+    a.discount === b.discount &&
+    prev.discountPercent === next.discountPercent &&
+    prev.categoryLabel === next.categoryLabel &&
+    prev.badgeLabel === next.badgeLabel &&
+    prev.onPress === next.onPress &&
+    prev.onAddToCart === next.onAddToCart &&
+    prev.onQuantityChange === next.onQuantityChange
+  );
+}
+
+export const ProductCard = memo(ProductCardComponent, areProductCardPropsEqual);
 
 const styles = StyleSheet.create({
   card: {

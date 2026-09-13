@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { theme } from '../../../theme';
 import { RemoteImage } from '../../../components/ui/RemoteImage/RemoteImage';
@@ -11,10 +11,9 @@ type CategoryCardProps = {
   onPress?: () => void;
 };
 
-export function CategoryCard({
+function CategoryCardComponent({
   label,
   imagePath,
-  iconText,
   isSelected = false,
   onPress,
 }: CategoryCardProps) {
@@ -47,6 +46,15 @@ export function CategoryCard({
     </Pressable>
   );
 }
+
+export const CategoryCard = memo(
+  CategoryCardComponent,
+  (prev, next) =>
+    prev.label === next.label &&
+    prev.imagePath === next.imagePath &&
+    prev.isSelected === next.isSelected &&
+    prev.onPress === next.onPress,
+);
 
 const styles = StyleSheet.create({
   container: {

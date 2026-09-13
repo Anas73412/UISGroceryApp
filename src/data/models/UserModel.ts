@@ -22,6 +22,7 @@ export interface UserResponseModel {
   bill_start_date: string | null;
   deviceToken: string | null;
   created_at: string;
+  token?: string;
 }
 
 export class UserModel extends Model {

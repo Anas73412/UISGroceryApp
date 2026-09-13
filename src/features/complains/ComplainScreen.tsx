@@ -13,7 +13,7 @@ import type { SettingsStackParamList } from '../../navigation/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-import { AppHeader } from '../../components/ui';
+import { AppHeader, usePullToRefresh } from '../../components/ui';
 import { theme } from '../../theme';
 import type { ComplainDetailModel } from '../../data/models/ComplainDetailModel';
 import { useLoading } from '../../components/context/LoadingContext';
@@ -277,6 +277,13 @@ export function ComplainScreen() {
 
   const fabBottom = Math.max(insets.bottom, 16) + theme.spacing[4];
 
+
+  const handlePullRefresh = useCallback(async () => {
+    await loadComplaints();
+  }, [loadComplaints]);
+
+  const { refreshControl } = usePullToRefresh(handlePullRefresh);
+
   return (
     <View style={styles.container}>
       <View style={styles.headerWrap}>
@@ -308,6 +315,7 @@ export function ComplainScreen() {
           renderItem={renderItem}
           style={styles.list}
           contentContainerStyle={styles.listContent}
+        refreshControl={refreshControl}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           ListEmptyComponent={

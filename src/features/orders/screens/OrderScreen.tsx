@@ -9,7 +9,7 @@ import {
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { SettingsStackParamList } from '../../../navigation/types';
-import { AppHeader } from '../../../components/ui';
+import { AppHeader, usePullToRefresh } from '../../../components/ui';
 import type { OrderModel } from '../../../data/models/OrderModel';
 import type { OrderItemModel } from '../../../data/models/OrderItemModel';
 import { IMAGE_BASE_URL, RUPEE_SIGN, SUCCESS } from '../../../utils/constants';
@@ -126,32 +126,45 @@ const OrderScreen = () => {
   const [tab, setTab] = useState<OrderTab>('all');
   const [orders, setOrders] = useState<OrderModel[]>([]);
 
-  const loadOrders = useCallback(async () => {
-    show('Loading...');
-    try {
-      const res = await OrderController.getAllUserOrders();
-      if (res.status !== SUCCESS || !Array.isArray(res.data)) {
-        setOrders([]);
-        if (res.message) showErrorDialog('Orders', res.message);
-        return;
+  const loadOrders = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (!options?.silent) {
+        show('Loading...');
       }
-      const sorted = [...res.data].sort(
-        (a, b) => (b.orderId ?? 0) - (a.orderId ?? 0),
-      );
-      setOrders(sorted);
-    } catch {
-      setOrders([]);
-      showErrorDialog('Orders', 'Could not load order history.');
-    } finally {
-      hide();
-    }
-  }, [hide, show, showErrorDialog]);
+      try {
+        const res = await OrderController.getAllUserOrders();
+        if (res.status !== SUCCESS || !Array.isArray(res.data)) {
+          setOrders([]);
+          if (res.message) showErrorDialog('Orders', res.message);
+          return;
+        }
+        const sorted = [...res.data].sort(
+          (a, b) => (b.orderId ?? 0) - (a.orderId ?? 0),
+        );
+        setOrders(sorted);
+      } catch {
+        setOrders([]);
+        showErrorDialog('Orders', 'Could not load order history.');
+      } finally {
+        if (!options?.silent) {
+          hide();
+        }
+      }
+    },
+    [hide, show, showErrorDialog],
+  );
 
   useFocusEffect(
     useCallback(() => {
-      loadOrders();
+      void loadOrders();
     }, [loadOrders]),
   );
+
+  const handlePullRefresh = useCallback(async () => {
+    await loadOrders({ silent: true });
+  }, [loadOrders]);
+
+  const { refreshControl } = usePullToRefresh(handlePullRefresh);
 
   const filtered = useMemo(() => filterOrdersByTab(orders, tab), [orders, tab]);
 
@@ -283,6 +296,7 @@ const OrderScreen = () => {
         keyExtractor={o => String(o.orderId)}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
+        refreshControl={refreshControl}
         ListEmptyComponent={
           <Text style={styles.emptyText}>No orders in this tab.</Text>
         }

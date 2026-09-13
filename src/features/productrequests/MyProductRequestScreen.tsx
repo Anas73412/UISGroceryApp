@@ -11,12 +11,11 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SettingsStackParamList } from '../../navigation/types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { AppHeader } from '../../components/ui';
+import { AppHeader, usePullToRefresh } from '../../components/ui';
 import { theme } from '../../theme';
 import type { ProductRequestModel } from '../../data/models/ProductRequestModel';
 import { useLoading } from '../../components/context/LoadingContext';
 import { useMessageDialog } from '../../components/context/MessageDialogContext';
-import { SUCCESS } from '../../utils/constants';
 import { productRequestController } from './controller';
 import { RequestCard } from './components/RequestCard';
 import styles from './MyProductRequestScreen.Style';
@@ -33,33 +32,47 @@ export function MyProductRequestScreen() {
   const { showErrorDialog } = useMessageDialog();
   const [requests, setRequests] = useState<ProductRequestModel[]>([]);
 
-  const loadRequests = useCallback(async () => {
-    show('Loading...');
-    try {
-      const res = await productRequestController.fetchUserRequests();
-      if (!Array.isArray(res)) {
-        setRequests([]);
-        if (res.message) showErrorDialog('Requests', res.message);
-        return;
+  const loadRequests = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (!options?.silent) {
+        show('Loading...');
       }
-      const sorted = [...res].sort((a, b) => (b.id ?? 0) - (a.id ?? 0));
-      setRequests(sorted);
-    } catch {
-      setRequests([]);
-      showErrorDialog('Requests', 'Could not load product requests.');
-    } finally {
-      hide();
-    }
-  }, [hide, show, showErrorDialog]);
+      try {
+        const res = await productRequestController.fetchUserRequests();
+        if (!Array.isArray(res)) {
+          setRequests([]);
+          if (res.message) showErrorDialog('Requests', res.message);
+          return;
+        }
+        const sorted = [...res].sort((a, b) => (b.id ?? 0) - (a.id ?? 0));
+        setRequests(sorted);
+      } catch {
+        setRequests([]);
+        showErrorDialog('Requests', 'Could not load product requests.');
+      } finally {
+        if (!options?.silent) {
+          hide();
+        }
+      }
+    },
+    [hide, show, showErrorDialog],
+  );
 
   useFocusEffect(
     useCallback(() => {
-      loadRequests();
+      void loadRequests();
     }, [loadRequests]),
   );
 
-  const renderItem: ListRenderItem<ProductRequestModel> = ({ item }) => (
-    <RequestCard request={item} />
+  const handlePullRefresh = useCallback(async () => {
+    await loadRequests({ silent: true });
+  }, [loadRequests]);
+
+  const { refreshControl } = usePullToRefresh(handlePullRefresh);
+
+  const renderItem: ListRenderItem<ProductRequestModel> = useCallback(
+    ({ item }) => <RequestCard request={item} />,
+    [],
   );
 
   const fabBottom = Math.max(insets.bottom, 16) + theme.spacing[4];
@@ -70,9 +83,7 @@ export function MyProductRequestScreen() {
         title="My Requests"
         titleColor={theme.colors.primary}
         showNewsButton
-        onNewsPress={() =>
-          showErrorDialog('News', 'News will be available soon.')
-        }
+        onNewsPress={() => navigation.navigate('News')}
       />
 
       <View style={styles.body}>
@@ -83,6 +94,7 @@ export function MyProductRequestScreen() {
           style={styles.list}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={refreshControl}
           ListEmptyComponent={
             <Text style={styles.emptyText}>No product requests yet.</Text>
           }

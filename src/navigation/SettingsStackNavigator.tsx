@@ -13,6 +13,8 @@ import { MyProductRequestScreen } from '../features/productrequests/MyProductReq
 import { NewProductRequestScreen } from '../features/productrequests/NewProductRequestScreen';
 import { ComplainScreen } from '../features/complains/ComplainScreen';
 import { AddComplainScreen } from '../features/complains/AddComplainScreen';
+import { NewsScreen } from '../features/news/NewsScreen';
+import { NewsDetailsScreen } from '../features/news/NewsDetailsScreen';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
@@ -37,6 +39,8 @@ export function SettingsStackNavigator() {
       />
       <Stack.Screen name="MyComplaints" component={ComplainScreen} />
       <Stack.Screen name="AddComplain" component={AddComplainScreen} />
+      <Stack.Screen name="News" component={NewsScreen} />
+      <Stack.Screen name="NewsDetails" component={NewsDetailsScreen} />
     </Stack.Navigator>
   );
 }

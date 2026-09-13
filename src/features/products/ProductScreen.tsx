@@ -1,9 +1,9 @@
 import {
   ActivityIndicator,
   FlatList,
-  Text,
   TextInput,
   View,
+  type ListRenderItem,
 } from 'react-native';
 import styles from './ProductScreen.Style';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -14,12 +14,12 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, memo } from 'react';
 import { ProductModel } from '../../data/models/ProductModel';
 import { productController } from './controller';
 import { ProductCard } from '../home/components/ProductCard';
 import { useLoading } from '../../components/context/LoadingContext';
-import { AppHeader } from '../../components/ui';
+import { AppHeader, usePullToRefresh } from '../../components/ui';
 import { BannerSlider } from '../../components/ui/BannerSlider/BannerSlider';
 import { homeController } from '../home/controller';
 import { SliderModel } from '../../data/models/SliderModel';
@@ -31,6 +31,40 @@ type ProductNavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
   'ProductScreen'
 >;
+
+type ProductGridItemProps = {
+  product: ProductModel;
+  cartQuantity: number;
+  onPressProduct: (product: ProductModel) => void;
+  onQuantityChange: (product: ProductModel, quantity: number) => void;
+};
+
+const noopAddToCart = () => {};
+
+const ProductGridItem = memo(function ProductGridItem({
+  product,
+  cartQuantity,
+  onPressProduct,
+  onQuantityChange,
+}: ProductGridItemProps) {
+  const productWithQty = useMemo(
+    () => ({ ...product, cartQuantity }),
+    [product, cartQuantity],
+  );
+
+  return (
+    <View style={styles.productColumn}>
+      <ProductCard
+        product={productWithQty}
+        discountPercent={product.discount}
+        categoryLabel={product.categoryName}
+        onPress={onPressProduct}
+        onAddToCart={noopAddToCart}
+        onQuantityChange={onQuantityChange}
+      />
+    </View>
+  );
+});
 
 export function ProductScreen() {
   const route = useRoute<RouteProp<HomeStackParamList, 'ProductScreen'>>();
@@ -69,10 +103,65 @@ export function ProductScreen() {
     });
   }, []);
 
-  useEffect(() => {
-    loadSliders();
-    loadProducts(1, false);
+  const loadSliders = useCallback(async () => {
+    try {
+      const res = await homeController.fetchSliders();
+      setSliders(extractDataArray<SliderModel>(res.data));
+    } catch {
+      setSliders([]);
+    }
   }, []);
+
+  const loadProducts = useCallback(
+    async (
+      page: number,
+      append: boolean = false,
+      options?: { silent?: boolean },
+    ) => {
+      if (page === 1 && !options?.silent) {
+        show('Loading...');
+      } else if (page !== 1) {
+        setIsLoadingMore(true);
+      }
+
+      try {
+        const res = await productController.fetchProducts(categoryId, page, 10);
+        const pagingData = res?.data;
+        if (pagingData) {
+          const newProducts = pagingData.products ?? [];
+          setProducts(prev =>
+            append ? [...prev, ...newProducts] : newProducts,
+          );
+          setCartQuantities(prev => {
+            const next = append ? { ...prev } : {};
+            for (const p of newProducts) {
+              const id = p.productId ?? 0;
+              if (id > 0) {
+                next[id] = p.cartQuantity ?? 0;
+              }
+            }
+            return next;
+          });
+          setTotalPages(pagingData.totalPages ?? 1);
+          setHasMore(page < (pagingData.totalPages ?? 1));
+          setPageNumber(page);
+        }
+      } catch {
+        // Keep existing list on failure
+      } finally {
+        if (!(options?.silent && page === 1)) {
+          hide();
+        }
+        setIsLoadingMore(false);
+      }
+    },
+    [categoryId, hide, show],
+  );
+
+  useEffect(() => {
+    void loadSliders();
+    void loadProducts(1, false);
+  }, [loadProducts, loadSliders]);
 
   useFocusEffect(
     useCallback(() => {
@@ -80,48 +169,15 @@ export function ProductScreen() {
     }, [syncCartQuantitiesFromStore]),
   );
 
-  const loadSliders = async () => {
-    try {
-      const res = await homeController.fetchSliders();
-      setSliders(extractDataArray<SliderModel>(res.data));
-    } catch {
-      setSliders([]);
-    }
-  };
+  const handlePullRefresh = useCallback(async () => {
+    await Promise.all([
+      loadSliders(),
+      loadProducts(1, false, { silent: true }),
+    ]);
+    await syncCartQuantitiesFromStore();
+  }, [loadProducts, loadSliders, syncCartQuantitiesFromStore]);
 
-  const loadProducts = async (page: number, append: boolean = false) => {
-    if (page === 1) {
-      show('Loading...');
-    } else {
-      setIsLoadingMore(true);
-    }
-
-    try {
-      const res = await productController.fetchProducts(categoryId, page, 10);
-      const pagingData = res?.data;
-      if (pagingData) {
-        const newProducts = pagingData.products ?? [];
-        setProducts(prev => (append ? [...prev, ...newProducts] : newProducts));
-        setCartQuantities(prev => {
-          const next = append ? { ...prev } : {};
-          for (const p of newProducts) {
-            const id = p.productId ?? 0;
-            if (id > 0) {
-              next[id] = p.cartQuantity ?? 0;
-            }
-          }
-          return next;
-        });
-        setTotalPages(pagingData.totalPages ?? 1);
-        setHasMore(page < (pagingData.totalPages ?? 1));
-        setPageNumber(page);
-      }
-    } catch (error: unknown) {
-    } finally {
-      hide();
-      setIsLoadingMore(false);
-    }
-  };
+  const { refreshControl } = usePullToRefresh(handlePullRefresh);
 
   const handleQuantityChange = useCallback(
     (_product: ProductModel, quantity: number) => {
@@ -141,12 +197,24 @@ export function ProductScreen() {
     [],
   );
 
-  const handleMore = () => {
+  const handlePressProduct = useCallback(
+    (p: ProductModel) => {
+      navigation.navigate('ProductDetailScreen', {
+        product: {
+          ...p,
+          cartQuantity:
+            cartQuantities[p.productId ?? 0] ?? p.cartQuantity ?? 0,
+        },
+      });
+    },
+    [cartQuantities, navigation],
+  );
+
+  const handleMore = useCallback(() => {
     if (!isLoadingMore && hasMore && pageNumber < totalPages) {
-      const nextPage = pageNumber + 1;
-      loadProducts(nextPage, true);
+      void loadProducts(pageNumber + 1, true);
     }
-  };
+  }, [hasMore, isLoadingMore, loadProducts, pageNumber, totalPages]);
 
   const filteredProducts = useMemo(() => {
     if (!searchQuery) {
@@ -174,54 +242,55 @@ export function ProductScreen() {
     [searchQuery, sliders],
   );
 
+  const renderItem: ListRenderItem<ProductModel> = useCallback(
+    ({ item }) => (
+      <ProductGridItem
+        product={item}
+        cartQuantity={
+          cartQuantities[item.productId ?? 0] ?? item.cartQuantity ?? 0
+        }
+        onPressProduct={handlePressProduct}
+        onQuantityChange={handleQuantityChange}
+      />
+    ),
+    [cartQuantities, handlePressProduct, handleQuantityChange],
+  );
+
+  const keyExtractor = useCallback(
+    (item: ProductModel) => String(item.productId),
+    [],
+  );
+
+  const listFooter = useMemo(
+    () =>
+      isLoadingMore ? (
+        <View style={styles.loadingFooter}>
+          <ActivityIndicator size="small" />
+        </View>
+      ) : null,
+    [isLoadingMore],
+  );
+
   return (
     <View style={styles.container}>
       <AppHeader title={categoryName} />
       <FlatList
         data={filteredProducts}
-        keyExtractor={item => String(item.productId)}
+        keyExtractor={keyExtractor}
         numColumns={2}
         columnWrapperStyle={styles.productRow}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={listHeader}
-        renderItem={({ item }) => {
-          const productWithQty: ProductModel = {
-            ...item,
-            cartQuantity:
-              cartQuantities[item.productId ?? 0] ?? item.cartQuantity ?? 0,
-          };
-          return (
-            <View style={styles.productColumn}>
-              <ProductCard
-                product={productWithQty}
-                discountPercent={item.discount}
-                categoryLabel={item.categoryName}
-                onPress={p =>
-                  navigation.navigate('ProductDetailScreen', {
-                    product: {
-                      ...(p as ProductModel),
-                      cartQuantity:
-                        cartQuantities[(p as ProductModel).productId ?? 0] ??
-                        (p as ProductModel).cartQuantity ??
-                        0,
-                    },
-                  })
-                }
-                onAddToCart={() => {}}
-                onQuantityChange={handleQuantityChange}
-              />
-            </View>
-          );
-        }}
+        renderItem={renderItem}
         onEndReached={handleMore}
         onEndReachedThreshold={0.3}
-        ListFooterComponent={
-          isLoadingMore ? (
-            <View style={styles.loadingFooter}>
-              <ActivityIndicator size="small" />
-            </View>
-          ) : null
-        }
+        ListFooterComponent={listFooter}
+        refreshControl={refreshControl}
+        initialNumToRender={6}
+        maxToRenderPerBatch={6}
+        updateCellsBatchingPeriod={50}
+        windowSize={7}
+        removeClippedSubviews
       />
     </View>
   );
