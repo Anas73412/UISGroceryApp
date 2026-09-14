@@ -7,9 +7,9 @@ import { mapErrorResponse, mapResponse } from '../auth/screens/login/service';
 import { CategoryResponseModel } from '../../data/reponses/CategoryResponseModel';
 import { PagingProductResponseModel } from '../../data/reponses/PagingProductResponseModel';
 import { CartResponseModel } from '../../data/models/CartModel';
-import { sessionStore } from '../../store/sessionStore';
-import { use } from 'react';
 import { PagingProductModel } from '../../data/models/PagingProductModel';
+import { UserServiceModel } from './model';
+import { PlanModel } from '../../data/models/PlanModel';
 
 export const homeService = {
   async fetchSliders(): Promise<ApiResponseModel<SliderResponseModel>> {
@@ -61,6 +61,31 @@ export const homeService = {
       return mapResponse<CartResponseModel>(response);
     } catch (error) {
       return mapErrorResponse(error);
+    }
+  },
+  async fetchActiveService(
+    id: number,
+  ): Promise<ApiResponseModel<UserServiceModel[] | UserServiceModel>> {
+    try {
+      const response = await apiClient.post<{
+        data?: UserServiceModel[] | UserServiceModel;
+      }>(API_ENDPOINTS.GET_ACTIVE_SERVICE, { id });
+      return mapResponse<UserServiceModel[] | UserServiceModel>(response);
+    } catch (error) {
+      return mapErrorResponse(error);
+    }
+  },
+  async getCurrentPlan(
+    userId: number,
+  ): Promise<ApiResponseModel<PlanModel[] | PlanModel>> {
+    try {
+      const response = await apiClient.post<{ data?: PlanModel[] | PlanModel }>(
+        API_ENDPOINTS.GET_CURRENT_PLAN,
+        { id: userId },
+      );
+      return mapResponse<PlanModel[] | PlanModel>(response);
+    } catch (error) {
+      return mapErrorResponse<PlanModel[] | PlanModel>(error);
     }
   },
 };

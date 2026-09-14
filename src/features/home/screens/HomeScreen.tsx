@@ -24,6 +24,7 @@ import {
   AUTO_SLIDE_INTERVAL,
   IMAGE_BASE_URL,
   SLIDER_ITEM_WIDTH,
+  SUCCESS,
 } from '../../../utils/constants';
 import { extractDataArray } from '../../../utils/utils';
 import { SliderBanner } from '../../../components/ui/Slider/SliderBanner';
@@ -43,10 +44,16 @@ import { theme } from '../../../theme';
 import { sessionStore } from '../../../store/sessionStore';
 import { isWiFiUserEnabled } from '../../../utils/userAccess';
 import { WiFiDashboardSections } from '../components/WiFiDashboardSections';
-import { buildWiFiDashboardData } from '../components/wifiDashboardData';
+import {
+  buildWiFiDashboardData,
+  pickActiveService,
+  pickCurrentPlan,
+} from '../components/wifiDashboardData';
 import { newsStore } from '../../news/store';
 import { ottStore } from '../../ott/store';
 import { OttChannelsHomeSection } from '../../ott/components/OttChannelsHomeSection';
+import type { PlanModel } from '../../../data/models/PlanModel';
+import type { UserServiceModel } from '../model';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -64,7 +71,18 @@ export function HomeScreen() {
   const ottChannels = ottStore(state => state.items);
   const loadOttChannels = ottStore(state => state.load);
   const showWifiDashboard = isWiFiUserEnabled(user);
-  const wifiDashboardData = useMemo(() => buildWiFiDashboardData(user), [user]);
+  const [currentPlan, setCurrentPlan] = useState<PlanModel | null>(null);
+  const [activeService, setActiveService] = useState<UserServiceModel | null>(
+    null,
+  );
+  const wifiDashboardData = useMemo(
+    () =>
+      buildWiFiDashboardData({
+        plan: currentPlan,
+        service: activeService,
+      }),
+    [activeService, currentPlan],
+  );
   const [products, setProducts] = React.useState<ProductModel[]>([]);
   const [sliders, setSliders] = useState<SliderModel[]>([]);
   const [categories, setCategories] = useState<CategoryModel[]>([]);
@@ -195,6 +213,22 @@ export function HomeScreen() {
       setSliders(sliderData);
       setCategories(categories);
       await syncCartQuantitiesFromStore();
+      const [planRes, serviceRes] = await Promise.all([
+        homeController.fetchUserCurrentPlan(),
+        homeController.fetchUserService(),
+      ]);
+
+      if (planRes.status === SUCCESS) {
+        setCurrentPlan(pickCurrentPlan(planRes.data));
+      } else {
+        setCurrentPlan(null);
+      }
+
+      if (serviceRes.status === SUCCESS) {
+        setActiveService(pickActiveService(serviceRes.data));
+      } else {
+        setActiveService(null);
+      }
 
       if (!options?.silent) {
         hide();

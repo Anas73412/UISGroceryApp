@@ -11,4 +11,5 @@ export interface BillDetailModel {
   id?: number;
   paidAmount?: number;
   status?: number;
+  billFromDate?: string;
 }

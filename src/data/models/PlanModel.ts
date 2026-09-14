@@ -17,6 +17,8 @@ export interface PlanModel {
   subtwo: string;
   active: number;
   validity: number;
+  planEndDate: string | '';
+  planStartDate: string | '';
   validityType: string;
   channelList: OttChannelModel[];
 }

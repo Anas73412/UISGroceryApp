@@ -47,6 +47,8 @@ export const API_ENDPOINTS = {
   NEWS_DETAILS: `${SUB_PATH}/getNewsDetails`,
   MARK_NEWS_READ: `${SUB_PATH}/markNewsRead`,
   ALL_OTT_CHANNELS: `${SUB_PATH}/getOttChannels`,
+  GET_CURRENT_PLAN: `${SUB_PATH}/getCurrentPlan`,
+  GET_ACTIVE_SERVICE: `${SUB_PATH}/getActiveService`,
 };
 
 export const { width: SCREEN_WIDTH } = Dimensions.get('window');

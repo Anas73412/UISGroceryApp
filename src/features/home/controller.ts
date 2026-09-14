@@ -4,6 +4,7 @@ import { sessionStore } from '../../store/sessionStore';
 import { FAILED, SUCCESS } from '../../utils/constants';
 import { mergeCartQuantitiesIntoProducts } from '../../utils/cartQuantityMerge';
 import { homeService } from './service';
+import { extractCurrentPlanId } from '../plan/service';
 
 export const homeController = {
   async fetchSliders() {
@@ -115,6 +116,73 @@ export const homeController = {
         status: FAILED,
         data: null,
         message: (error as Error).message || 'Failed to load user carts',
+      };
+    }
+  },
+  async fetchUserCurrentPlan() {
+    try {
+      let userId = Number(sessionStore.getState().user?.uid ?? 0);
+      if (!Number.isInteger(userId) || userId <= 0) {
+        await sessionStore.getState().loadSession();
+        userId = Number(sessionStore.getState().user?.uid ?? 0);
+      }
+      if (!Number.isInteger(userId) || userId <= 0) {
+        return {
+          status: FAILED,
+          data: null,
+          message: 'Unable to restore the current user session',
+        };
+      }
+      const res = await homeService.getCurrentPlan(userId);
+      if (res.status === SUCCESS) {
+        const planId = extractCurrentPlanId(res.data);
+        if (planId > 0) {
+          await sessionStore.getState().updatePlanId(planId);
+        }
+        return res;
+      }
+      return {
+        status: FAILED,
+        data: null,
+        message: res.message || 'Failed to load User Plan',
+      };
+    } catch (error) {
+      return {
+        status: FAILED,
+        data: null,
+        message: (error as Error).message || 'Failed to load user plan',
+      };
+    }
+  },
+
+  async fetchUserService() {
+    try {
+      let userId = Number(sessionStore.getState().user?.uid ?? 0);
+      if (!Number.isInteger(userId) || userId <= 0) {
+        await sessionStore.getState().loadSession();
+        userId = Number(sessionStore.getState().user?.uid ?? 0);
+      }
+      if (!Number.isInteger(userId) || userId <= 0) {
+        return {
+          status: FAILED,
+          data: null,
+          message: 'Unable to restore the current user session',
+        };
+      }
+      const res = await homeService.fetchActiveService(userId);
+      if (res.status === SUCCESS) {
+        return res;
+      }
+      return {
+        status: FAILED,
+        data: null,
+        message: res.message || 'Failed to load User Service',
+      };
+    } catch (error) {
+      return {
+        status: FAILED,
+        data: null,
+        message: (error as Error).message || 'Failed to load User Service',
       };
     }
   },

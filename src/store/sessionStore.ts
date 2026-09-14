@@ -12,6 +12,7 @@ interface SessionStore {
   isLoaded: boolean;
   loadSession: () => Promise<boolean>;
   setSession: (user: UserModel | null, token: string | null) => void;
+  updatePlanId: (planId: number) => Promise<void>;
   clearSession: () => void;
 }
 
@@ -19,8 +20,7 @@ function getValidUserId(user: UserModel | null): number {
   const userId = Number(user?.uid ?? 0);
   return Number.isInteger(userId) && userId > 0 ? userId : 0;
 }
-
-export const sessionStore = create<SessionStore>(set => ({
+export const sessionStore = create<SessionStore>((set, get) => ({
   user: null,
   token: null,
   isLoaded: false,
@@ -70,6 +70,17 @@ export const sessionStore = create<SessionStore>(set => ({
       void appPrefs.set('cachedUserId', userId);
     }
     set({ user, token, isLoaded: true });
+  },
+
+  updatePlanId: async planId => {
+    if (!Number.isInteger(planId) || planId <= 0 || !get().user) {
+      return;
+    }
+
+    const updatedUser = await UserRepository.updatePlanId(planId);
+    if (updatedUser) {
+      set({ user: updatedUser });
+    }
   },
 
   clearSession: () => set({ user: null, token: null, isLoaded: true }),

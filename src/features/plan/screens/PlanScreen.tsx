@@ -11,16 +11,16 @@ import {
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { sessionStore } from '../../../store/sessionStore';
 import { theme } from '../../../theme';
-import { IMAGE_BASE_URL } from '../../../utils/constants';
+import { IMAGE_BASE_URL, SUCCESS } from '../../../utils/constants';
 import { RemoteImage } from '../../../components/ui/RemoteImage/RemoteImage';
 import styles from './PlanScreen.Style';
 import type { PlanModel } from '../../../data/models/PlanModel';
-import { planService } from '../service';
+import { extractCurrentPlanId, planService } from '../service';
 import { usePullToRefresh } from '../../../components/ui';
 
 export function PlanScreen() {
   const user = sessionStore(state => state.user);
-  const planId = user?.planId ?? 0;
+  const planId = Number(user?.planId ?? 0);
   const [plans, setPlans] = useState<PlanModel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -34,8 +34,16 @@ export function PlanScreen() {
     else setIsLoading(true);
     setErrorMessage('');
 
+    const currentPlanRes = await planService.getCurrentPlan();
+    if (currentPlanRes.status === SUCCESS) {
+      const currentPlanId = extractCurrentPlanId(currentPlanRes.data);
+      if (currentPlanId > 0) {
+        await sessionStore.getState().updatePlanId(currentPlanId);
+      }
+    }
+
     const response = await planService.getAllPlans();
-    if (response.status === 'Success' && Array.isArray(response.data)) {
+    if (response.status === SUCCESS && Array.isArray(response.data)) {
       setPlans(response.data);
     } else {
       setErrorMessage(response.message || 'Unable to load plans right now.');
@@ -69,14 +77,14 @@ export function PlanScreen() {
         ].some(value => value?.toLowerCase().includes(query));
       const matchesFilter =
         filter === 'all' ||
-        (filter === 'current' && plan.id === planId) ||
+        (filter === 'current' && Number(plan.id) === planId) ||
         (filter === 'ott' && plan.channelList.length > 0);
       return matchesQuery && matchesFilter;
     });
 
     return filtered.sort((first, second) => {
-      if (first.id === planId) return -1;
-      if (second.id === planId) return 1;
+      if (Number(first.id) === planId) return -1;
+      if (Number(second.id) === planId) return 1;
       const firstPrice = first.pricewithgst || first.planprice;
       const secondPrice = second.pricewithgst || second.planprice;
       return sort === 'priceAsc'
@@ -90,7 +98,7 @@ export function PlanScreen() {
     `${plan.validity} ${plan.validityType || 'days'}`;
 
   const renderPlan = (plan: PlanModel) => {
-    const isCurrentPlan = plan.id === planId;
+    const isCurrentPlan = Number(plan.id) === planId;
     const benefits = [plan.subone, plan.subtwo].filter(Boolean);
 
     return (

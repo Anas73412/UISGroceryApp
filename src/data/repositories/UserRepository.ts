@@ -56,6 +56,19 @@ class UserRepository {
     const match = users.find(record => (record as UserModel).uid === uid);
     return match ? (match as UserModel) : null;
   }
+
+  async updatePlanId(planId: number): Promise<UserModel | null> {
+    const user = await this.getCurrentUser();
+    if (!user) return null;
+
+    await database.write(async () => {
+      await user.update(record => {
+        (record as UserModel).planId = planId;
+      });
+    });
+
+    return this.getCurrentUser();
+  }
 }
 
 export default new UserRepository();
